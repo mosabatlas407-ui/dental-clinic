@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8"><title>تعديل الموعد</title>
+    <style>
+        body { font-family: 'Segoe UI'; background: #e0f7fa; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        form { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); width: 300px; }
+        h2 { color: #0077b6; text-align: center; }
+        label { display: block; margin-top: 10px; }
+        input { width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 8px; }
+        button { width: 100%; padding: 10px; background: #0077b6; color: white; border: none; border-radius: 8px; margin-top: 15px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <form method="post">
+        <h2>تعديل الموعد #{{ appointment_id }}</h2>
+        <label>التاريخ الحالي: {{ current_date }}</label>
+        <input type="date" name="new_date" value="{{ current_date }}" required>
+        <label>الوقت الحالي: {{ current_time }}</label>
+        <input type="time" name="new_time" value="{{ current_time }}" required>
+        <button type="submit">حفظ التعديل</button>
+        <p style="text-align:center;"><a href="/admin/dashboard">إلغاء</a></p>
+    </form>
+</body>
+</html>

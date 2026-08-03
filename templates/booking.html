@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <title>نموذج الحجز - دنتال كير</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', Tahoma;
+            background: linear-gradient(135deg, #e0f7fa, #e1f5fe);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+        }
+        .bg-icons {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.15;
+        }
+        .bg-icons span {
+            position: absolute;
+            font-size: 4rem;
+            animation: float 7s infinite ease-in-out;
+        }
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-25px) rotate(10deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+        .card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            padding: 30px 40px;
+            width: 100%;
+            max-width: 550px;
+            z-index: 2;
+            text-align: center;
+        }
+        .card h2 { color: #0077b6; margin-bottom: 15px; }
+        .card .type-badge {
+            display: inline-block;
+            background: #00b4d8;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+        label { display: block; text-align: right; margin: 12px 0 5px; font-weight: 600; color: #333; }
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border 0.3s;
+        }
+        input:focus, select:focus { border-color: #0077b6; outline: none; }
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(90deg, #0077b6, #00b4d8);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-top: 25px;
+            cursor: pointer;
+        }
+        button:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,119,182,0.4); }
+        .home-btn {
+            display: block;
+            width: 100%;
+            margin-top: 15px;
+            padding: 14px;
+            background: #f0f0f0;
+            color: #0077b6;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: background 0.3s;
+            border: 1px solid #e0e0e0;
+        }
+        .home-btn:hover { background: #e0e0e0; }
+    </style>
+</head>
+<body>
+    <div class="bg-icons">
+        <span style="top:5%; left:5%;">🦷</span>
+        <span style="top:80%; left:10%;">🏥</span>
+        <span style="top:15%; left:80%;">🦷</span>
+        <span style="top:70%; left:85%;">✨</span>
+        <span style="top:50%; left:50%;">🦷</span>
+    </div>
+
+    <div class="card">
+        <h2>حجز موعد</h2>
+        <div class="type-badge">
+            {% if booking_type == 'consultation' %} استشارة
+            {% elif booking_type == 'urgent' %} حجز مستعجل
+            {% else %} عملية
+            {% endif %}
+        </div>
+        <form action="/book" method="post">
+            <input type="hidden" name="booking_type" value="{{ booking_type }}">
+            <label>الاسم الكامل:</label>
+            <input type="text" name="name" required>
+            <label>العمر:</label>
+            <input type="number" name="age" min="1" max="120" required>
+            <label>الجنس:</label>
+            <select name="gender" required>
+                <option value="">اختر...</option>
+                <option value="ذكر">ذكر</option>
+                <option value="أنثى">أنثى</option>
+            </select>
+            <label>مكان السكن:</label>
+            <input type="text" name="address" required placeholder="المدينة / الحي">
+            <label>المسكن المفضل:</label>
+            <input type="text" name="painkiller" placeholder="مثلاً: باراسيتامول">
+            <button type="submit">✨ احجز الآن</button>
+        </form>
+        <a href="/" class="home-btn">🏠 العودة للرئيسية</a>
+    </div>
+</body>
+</html>
