@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, session
 import sqlite3
 from datetime import datetime, timedelta
 import traceback, sys
+import os
 
 app = Flask(__name__)
 app.secret_key = 'dental_clinic_secret_key_2026'
