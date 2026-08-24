@@ -114,6 +114,8 @@ def init_db():
     conn.commit()
     conn.close()
 
+init_db()
+
 @app.context_processor
 def inject_clinic():
     """بيانات العيادة متاحة تلقائياً في كل القوالب"""
@@ -559,9 +561,23 @@ from fpdf import FPDF
 import arabic_reshaper
 from bidi.algorithm import get_display
 
+def find_arabic_font():
+    """البحث عن خط عربي: الملف المرفق مع المشروع أولاً ثم خطوط النظام"""
+    bundled = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'fonts', 'Amiri-Regular.ttf')
+    if os.path.exists(bundled):
+        return bundled
+    for candidate in [r'C:\Windows\Fonts\arial.ttf', '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf']:
+        if os.path.exists(candidate):
+            return candidate
+    return None
+
 class InvoicePDF(FPDF):
     def add_arabic_font(self):
-        self.add_font('Arabic', '', r'C:\Windows\Fonts\arial.ttf', uni=True)
+        font_path = find_arabic_font()
+        if font_path:
+            self.add_font('Arabic', '', font_path, uni=True)
+            return True
+        return False
 
 def generate_invoice_pdf(invoice_id):
     conn = sqlite3.connect('clinic.db')
@@ -582,10 +598,8 @@ def generate_invoice_pdf(invoice_id):
 
     pdf = InvoicePDF()
     pdf.add_page()
-    try:
-        pdf.add_arabic_font()
-    except Exception as e:
-        print(f'[invoice] فشل تحميل الخط: {e}')
+    if not pdf.add_arabic_font():
+        print('[invoice] مفيش خط عربي متاح')
         return None
     pdf.set_font('Arabic', '', 16)
     pdf.cell(0, 12, get_display(arabic_reshaper.reshape(f'{get_clinic_name()} - فاتورة علاج')), align='C')
@@ -624,7 +638,7 @@ def generate_invoice_pdf(invoice_id):
     pdf.cell(45, 12, get_display(arabic_reshaper.reshape(f'({status})')), border=1, align='C')
     pdf.ln(20)
     pdf.set_font('Arabic', '', 11)
-    pdf.cell(0, 10, get_display(arabic_reshaper.reshape(f'شكراً لثقتكم ب{get_clinic_name()} 🦷')), align='C')
+    pdf.cell(0, 10, get_display(arabic_reshaper.reshape(f'شكراً لثقتكم ب{get_clinic_name()}')), align='C')
 
     filename = f'invoice_{invoice_id}.pdf'
     pdf.output(filename)
@@ -652,7 +666,11 @@ from bidi.algorithm import get_display
 
 class ArabicPDF(FPDF):
     def add_arabic_font(self):
-        self.add_font('Arabic', '', r'C:\Windows\Fonts\arial.ttf', uni=True)
+        font_path = find_arabic_font()
+        if font_path:
+            self.add_font('Arabic', '', font_path, uni=True)
+            return True
+        return False
 
 @app.route('/admin/pdf')
 def admin_pdf():

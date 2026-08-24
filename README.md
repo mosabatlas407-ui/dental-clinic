@@ -1,3 +1,13 @@
+---
+title: Dental Clinic
+emoji: 🦷
+colorFrom: blue
+colorTo: blue
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 # عيادة دنتال كير - نظام حجز ذكي
 
 مشروع ويب متكامل لإدارة مواعيد عيادة أسنان باستخدام Flask.
