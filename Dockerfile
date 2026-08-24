@@ -3,5 +3,6 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
-EXPOSE 7860
-CMD ["gunicorn", "app:app", "--workers=1", "--threads=4", "--bind=0.0.0.0:7860"]
+ENV PORT=5000
+EXPOSE 5000
+CMD ["gunicorn", "app:app", "--workers=1", "--threads=4", "--bind=0.0.0.0:5000"]
