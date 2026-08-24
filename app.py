@@ -1,13 +1,55 @@
 from flask import Flask, render_template, request, redirect, session
 import sqlite3
+import hashlib
 from datetime import datetime, timedelta
 import traceback, sys
 import os
+from email_service import (send_booking_confirmation, send_reminder,
+                           send_invoice, send_email, get_settings,
+                           smtp_configured, refresh_clinic_name, get_clinic_name)
 
 app = Flask(__name__)
 app.secret_key = 'dental_clinic_secret_key_2026'
 
-ADMIN_PASSWORD = "admin123"
+DEFAULT_PRICES = {'consultation': 150, 'urgent': 250, 'surgery': 500}
+
+CLINIC_DEFAULTS = {
+    'clinic_name': 'عيادة دنتال كير',
+    'branches': 'مصر الجديدة\nمدينة نصر\nالمعادي',
+    'whatsapp': '201000000000',
+    'facebook': 'https://facebook.com/DentalCare',
+    'instagram': 'https://instagram.com/DentalCare',
+    'clinic_email': '',
+}
+
+def hash_password(password):
+    return hashlib.sha256(password.encode('utf-8')).hexdigest()
+
+def get_setting(key, default=''):
+    s = get_settings()
+    return s.get(key, default)
+
+def get_clinic():
+    """بيانات العيادة من الإعدادات مع القيم الافتراضية"""
+    s = get_settings()
+    data = dict(CLINIC_DEFAULTS)
+    for key in data:
+        if s.get(key):
+            data[key] = s[key]
+    data['name'] = data['clinic_name']
+    data['branch_list'] = [b.strip() for b in data['branches'].split('\n') if b.strip()]
+    return data
+
+def verify_admin_password(password):
+    stored = get_setting('admin_password_hash')
+    if not stored:
+        return password == 'admin123'
+    return hash_password(password) == stored
+
+def get_price(booking_type):
+    """قراءة سعر نوع الحجز من الإعدادات مع الرجوع للسعر الافتراضي"""
+    prices = get_settings()
+    return float(prices.get(f'price_{booking_type}', DEFAULT_PRICES.get(booking_type, 0)))
 
 def init_db():
     conn = sqlite3.connect('clinic.db')
@@ -21,6 +63,7 @@ def init_db():
             painkiller TEXT,
             address TEXT,
             booking_type TEXT,
+            email TEXT DEFAULT '',
             initial_diagnosis TEXT DEFAULT 'تحت الفحص'
         )
     ''')
@@ -34,8 +77,47 @@ def init_db():
             FOREIGN KEY(patient_id) REFERENCES patients(id)
         )
     ''')
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS settings (
+            key TEXT PRIMARY KEY,
+            value TEXT
+        )
+    ''')
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS invoices (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            patient_id INTEGER NOT NULL,
+            appointment_id INTEGER,
+            total REAL DEFAULT 0,
+            status TEXT DEFAULT 'غير مدفوعة',
+            created_at TEXT,
+            FOREIGN KEY(patient_id) REFERENCES patients(id)
+        )
+    ''')
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS invoice_items (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            invoice_id INTEGER NOT NULL,
+            description TEXT NOT NULL,
+            price REAL DEFAULT 0,
+            FOREIGN KEY(invoice_id) REFERENCES invoices(id)
+        )
+    ''')
+    try:
+        c.execute("ALTER TABLE patients ADD COLUMN email TEXT DEFAULT ''")
+    except sqlite3.OperationalError:
+        pass
+    for key, value in CLINIC_DEFAULTS.items():
+        c.execute('INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)', (key, value))
+    c.execute('INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)',
+              ('admin_password_hash', hash_password('admin123')))
     conn.commit()
     conn.close()
+
+@app.context_processor
+def inject_clinic():
+    """بيانات العيادة متاحة تلقائياً في كل القوالب"""
+    return {'clinic': get_clinic()}
 
 @app.errorhandler(500)
 def internal_error(e):
@@ -60,16 +142,17 @@ def book():
     name = request.form['name']
     age = request.form['age']
     gender = request.form['gender']
-    painkiller = request.form['painkiller']
+    painkiller = ''
     address = request.form['address']
+    email = request.form.get('email', '').strip()
     booking_type = request.form['booking_type']
 
     conn = sqlite3.connect('clinic.db')
     c = conn.cursor()
     c.execute('''
-        INSERT INTO patients (name, age, gender, painkiller, address, booking_type)
-        VALUES (?, ?, ?, ?, ?, ?)
-    ''', (name, age, gender, painkiller, address, booking_type))
+        INSERT INTO patients (name, age, gender, painkiller, address, email, booking_type)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    ''', (name, age, gender, painkiller, address, email, booking_type))
     patient_id = c.lastrowid
 
     appointment_date, appointment_time = find_next_available_slot(c)
@@ -80,6 +163,11 @@ def book():
     ''', (patient_id, appointment_date, appointment_time))
     conn.commit()
     conn.close()
+
+    if email and smtp_configured():
+        ok, msg = send_booking_confirmation(name, email, appointment_date, appointment_time)
+        if not ok:
+            print(f"[email] تأكيد الحجز فشل: {msg}")
 
     return f'''
     <html dir="rtl" lang="ar">
@@ -97,7 +185,7 @@ def book():
             <div class="details">
                 <p><strong>الاسم:</strong> {name}</p>
                 <p><strong>نوع الحجز:</strong> {booking_type}</p>
-                <p><strong>مكان السكن:</strong> {address}</p>
+                <p><strong>تشخيص الحالة:</strong> {address}</p>
                 <p><strong>التاريخ:</strong> {appointment_date}</p>
                 <p><strong>الوقت:</strong> {appointment_time}</p>
             </div>
@@ -131,7 +219,7 @@ def find_next_available_slot(c):
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
     if request.method == 'POST':
-        if request.form['password'] == ADMIN_PASSWORD:
+        if verify_admin_password(request.form['password']):
             session['admin'] = True
             return redirect('/admin/dashboard')
         else:
@@ -152,7 +240,7 @@ def admin_dashboard():
     # استخدام تاريخ اليوم بصيغة نصية لتجنب مشاكل التوقيت
     today_str = datetime.now().date().strftime('%Y-%m-%d')
     c.execute('''
-        SELECT a.id, p.name, p.booking_type, a.appointment_date, a.appointment_time, p.address, a.status
+        SELECT a.id, p.name, p.booking_type, a.appointment_date, a.appointment_time, p.address, a.status, p.email
         FROM appointments a
         JOIN patients p ON a.patient_id = p.id
         WHERE a.appointment_date >= ?
@@ -197,6 +285,366 @@ def admin_edit(appointment_id):
         else:
             return "غير موجود", 404
 
+# ====================== إعدادات الأسعار ======================
+@app.route('/admin/prices', methods=['GET', 'POST'])
+def admin_prices():
+    if not session.get('admin'):
+        return redirect('/admin/login')
+    msg = ''
+    if request.method == 'POST':
+        conn = sqlite3.connect('clinic.db')
+        c = conn.cursor()
+        for key in ['price_consultation', 'price_urgent', 'price_surgery']:
+            val = request.form.get(key, '').strip()
+            if val:
+                c.execute('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)', (key, val))
+        conn.commit()
+        conn.close()
+        msg = '✅ تم حفظ الأسعار'
+    prices = {k: get_price(k) for k in DEFAULT_PRICES}
+    return render_template('admin_prices.html', prices=prices, msg=msg)
+
+# ====================== إعدادات العيادة والبريد ======================
+@app.route('/admin/settings', methods=['GET', 'POST'])
+def admin_settings():
+    if not session.get('admin'):
+        return redirect('/admin/login')
+    msg = ''
+    if request.method == 'POST':
+        profile_keys = list(CLINIC_DEFAULTS.keys()) + ['smtp_email', 'smtp_password']
+        conn = sqlite3.connect('clinic.db')
+        c = conn.cursor()
+        for key in profile_keys:
+            val = request.form.get(key)
+            if val is not None and val.strip() != '':
+                c.execute('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)',
+                          (key, val.strip()))
+            elif key in ('smtp_email', 'smtp_password') and val is not None:
+                c.execute('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)',
+                          (key, ''))
+        conn.commit()
+        conn.close()
+        refresh_clinic_name()
+        msg = '✅ تم حفظ الإعدادات'
+    settings = get_settings()
+    return render_template('admin_settings.html', settings=settings, msg=msg)
+
+@app.route('/admin/change_password', methods=['POST'])
+def admin_change_password():
+    if not session.get('admin'):
+        return redirect('/admin/login')
+    current = request.form.get('current_password', '')
+    new = request.form.get('new_password', '')
+    confirm = request.form.get('confirm_password', '')
+    if not verify_admin_password(current):
+        msg = '❌ كلمة المرور الحالية غير صحيحة'
+    elif len(new) < 6:
+        msg = '❌ كلمة المرور الجديدة قصيرة جداً (6 أحرف على الأقل)'
+    elif new != confirm:
+        msg = '❌ كلمتا المرور غير متطابقتين'
+    else:
+        conn = sqlite3.connect('clinic.db')
+        c = conn.cursor()
+        c.execute('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)',
+                  ('admin_password_hash', hash_password(new)))
+        conn.commit()
+        conn.close()
+        msg = '✅ تم تغيير كلمة المرور بنجاح'
+    return render_template('admin_settings.html', settings=get_settings(), msg=msg)
+
+@app.route('/admin/settings/test', methods=['POST'])
+def admin_settings_test():
+    if not session.get('admin'):
+        return redirect('/admin/login')
+    test_email = request.form.get('test_email', '').strip()
+    if not test_email:
+        return redirect('/admin/settings')
+    ok, msg = send_email(test_email, f'🔧 بريد تجريبي - {get_clinic_name()}',
+                         '<html dir="rtl"><body style="font-family:Segoe UI;"><h3>✅ تم إرسال هذا البريد التجريبي بنجاح</h3><p>إعدادات البريد تعمل بشكل صحيح.</p></body></html>')
+    return render_template('admin_settings.html', settings=get_settings(),
+                           msg=f'📧 بريد تجريبي: {"✅ " + msg if ok else "❌ " + msg}')
+
+# ====================== التذكيرات ======================
+@app.route('/admin/remind/<int:appointment_id>')
+def admin_remind(appointment_id):
+    if not session.get('admin'):
+        return redirect('/admin/login')
+    conn = sqlite3.connect('clinic.db')
+    c = conn.cursor()
+    c.execute('''
+        SELECT p.name, p.email, a.appointment_date, a.appointment_time, p.booking_type
+        FROM appointments a JOIN patients p ON a.patient_id = p.id
+        WHERE a.id = ?
+    ''', (appointment_id,))
+    row = c.fetchone()
+    conn.close()
+    if not row:
+        return "الموعد غير موجود", 404
+    name, email, date, time, booking_type = row
+    if not email:
+        return render_template('admin_settings.html', settings=get_settings(),
+                               msg='⚠️ هذا المريض لا يمتلك بريداً إلكترونياً')
+    ok, msg = send_reminder(name, email, date, time, booking_type)
+    return render_template('admin_settings.html', settings=get_settings(),
+                           msg=f'📧 تذكير: {"✅ " + msg if ok else "❌ " + msg}')
+
+def send_daily_reminders():
+    """إرسال تذكير تلقائي لكل موعد غد"""
+    if not smtp_configured():
+        print('[reminder] SMTP غير مضبوط - تخطي الإرسال التلقائي')
+        return
+    tomorrow = (datetime.now().date() + timedelta(days=1)).strftime('%Y-%m-%d')
+    conn = sqlite3.connect('clinic.db')
+    c = conn.cursor()
+    c.execute('''
+        SELECT p.name, p.email, a.id, a.appointment_date, a.appointment_time, p.booking_type
+        FROM appointments a JOIN patients p ON a.patient_id = p.id
+        WHERE a.appointment_date = ? AND a.status = 'محجوز' AND p.email != ''
+    ''', (tomorrow,))
+    rows = c.fetchall()
+    conn.close()
+    sent = 0
+    for name, email, appt_id, date, time, booking_type in rows:
+        ok, msg = send_reminder(name, email, date, time, booking_type)
+        if ok:
+            sent += 1
+            print(f'[reminder] تم إرسال تذكير للموعد #{appt_id} ({name})')
+        else:
+            print(f'[reminder] فشل إرسال تذكير للموعد #{appt_id}: {msg}')
+    print(f'[reminder] أُرسل {sent} تذكيراً لمواعيد {tomorrow}')
+
+def start_scheduler():
+    from apscheduler.schedulers.background import BackgroundScheduler
+    scheduler = BackgroundScheduler(daemon=True)
+    scheduler.add_job(send_daily_reminders, 'cron', hour=9, minute=0, id='daily_reminders')
+    scheduler.start()
+    print('[scheduler] بدأ المجدول اليومي (تذكير 9:00 صباحاً)')
+
+if not app.debug or os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
+    try:
+        start_scheduler()
+    except Exception as e:
+        print(f'[scheduler] تعذر البدء: {e}')
+
+# ====================== نظام الفواتير ======================
+@app.route('/admin/complete/<int:appointment_id>')
+def admin_complete(appointment_id):
+    if not session.get('admin'):
+        return redirect('/admin/login')
+    conn = sqlite3.connect('clinic.db')
+    c = conn.cursor()
+    c.execute('''
+        SELECT a.patient_id, p.booking_type, a.appointment_date
+        FROM appointments a JOIN patients p ON a.patient_id = p.id
+        WHERE a.id = ?
+    ''', (appointment_id,))
+    row = c.fetchone()
+    if not row:
+        conn.close()
+        return "الموعد غير موجود", 404
+    patient_id, booking_type, appointment_date = row
+    c.execute('UPDATE appointments SET status=? WHERE id=?', ('مكتمل', appointment_id))
+    c.execute('''
+        INSERT INTO invoices (patient_id, appointment_id, created_at)
+        VALUES (?, ?, ?)
+    ''', (patient_id, appointment_id, datetime.now().strftime('%Y-%m-%d %H:%M')))
+    invoice_id = c.lastrowid
+    service_ar = {'consultation': 'فحص واستشارة', 'urgent': 'حالة طارئة', 'surgery': 'عملية جراحية'}.get(booking_type, booking_type)
+    default_price = get_price(booking_type)
+    c.execute('INSERT INTO invoice_items (invoice_id, description, price) VALUES (?, ?, ?)',
+              (invoice_id, service_ar, default_price))
+    c.execute('UPDATE invoices SET total = (SELECT COALESCE(SUM(price),0) FROM invoice_items WHERE invoice_id=?) WHERE id=?',
+              (invoice_id, invoice_id))
+    conn.commit()
+    conn.close()
+    return redirect(f'/admin/invoices/{invoice_id}')
+
+@app.route('/admin/invoices')
+def admin_invoices():
+    if not session.get('admin'):
+        return redirect('/admin/login')
+    conn = sqlite3.connect('clinic.db')
+    c = conn.cursor()
+    c.execute('''
+        SELECT i.id, p.name, i.created_at, i.total, i.status, a.appointment_date
+        FROM invoices i
+        JOIN patients p ON i.patient_id = p.id
+        LEFT JOIN appointments a ON i.appointment_id = a.id
+        ORDER BY i.id DESC
+    ''')
+    invoices = c.fetchall()
+    conn.close()
+    return render_template('admin_invoices.html', invoices=invoices)
+
+@app.route('/admin/invoices/<int:invoice_id>', methods=['GET', 'POST'])
+def admin_invoice(invoice_id):
+    if not session.get('admin'):
+        return redirect('/admin/login')
+    if request.method == 'POST':
+        action = request.form.get('action')
+        conn = sqlite3.connect('clinic.db')
+        c = conn.cursor()
+        if action == 'add_item':
+            description = request.form.get('description', '').strip()
+            price = float(request.form.get('price', 0) or 0)
+            if description:
+                c.execute('INSERT INTO invoice_items (invoice_id, description, price) VALUES (?, ?, ?)',
+                          (invoice_id, description, price))
+        elif action == 'delete_item':
+            item_id = request.form.get('item_id')
+            c.execute('DELETE FROM invoice_items WHERE id=? AND invoice_id=?', (item_id, invoice_id))
+        elif action == 'toggle_status':
+            c.execute('UPDATE invoices SET status = CASE WHEN status="مدفوعة" THEN "غير مدفوعة" ELSE "مدفوعة" END WHERE id=?',
+                      (invoice_id,))
+        c.execute('UPDATE invoices SET total = (SELECT COALESCE(SUM(price),0) FROM invoice_items WHERE invoice_id=?) WHERE id=?',
+                  (invoice_id, invoice_id))
+        conn.commit()
+        conn.close()
+        return redirect(f'/admin/invoices/{invoice_id}')
+    conn = sqlite3.connect('clinic.db')
+    c = conn.cursor()
+    c.execute('''
+        SELECT i.id, p.name, p.email, i.created_at, i.total, i.status, i.appointment_id
+        FROM invoices i JOIN patients p ON i.patient_id = p.id
+        WHERE i.id = ?
+    ''', (invoice_id,))
+    inv = c.fetchone()
+    if not inv:
+        conn.close()
+        return "الفاتورة غير موجودة", 404
+    c.execute('SELECT id, description, price FROM invoice_items WHERE invoice_id=?', (invoice_id,))
+    items = c.fetchall()
+    conn.close()
+    return render_template('admin_invoice.html', inv=inv, items=items)
+
+@app.route('/admin/invoices/<int:invoice_id>/delete')
+def admin_invoice_delete(invoice_id):
+    if not session.get('admin'):
+        return redirect('/admin/login')
+    conn = sqlite3.connect('clinic.db')
+    c = conn.cursor()
+    c.execute('DELETE FROM invoice_items WHERE invoice_id=?', (invoice_id,))
+    c.execute('DELETE FROM invoices WHERE id=?', (invoice_id,))
+    conn.commit()
+    conn.close()
+    return redirect('/admin/invoices')
+
+@app.route('/admin/invoices/<int:invoice_id>/email')
+def admin_invoice_email(invoice_id):
+    if not session.get('admin'):
+        return redirect('/admin/login')
+    conn = sqlite3.connect('clinic.db')
+    c = conn.cursor()
+    c.execute('''
+        SELECT p.name, p.email, a.appointment_date
+        FROM invoices i JOIN patients p ON i.patient_id = p.id
+        LEFT JOIN appointments a ON i.appointment_id = a.id
+        WHERE i.id = ?
+    ''', (invoice_id,))
+    row = c.fetchone()
+    conn.close()
+    if not row:
+        return "الفاتورة غير موجودة", 404
+    name, email, appointment_date = row
+    if not email:
+        return render_template('admin_settings.html', settings=get_settings(),
+                               msg='⚠️ هذا المريض لا يمتلك بريداً إلكترونياً')
+    pdf_path = generate_invoice_pdf(invoice_id)
+    ok, msg = send_invoice(name, email, invoice_id, appointment_date or '—', pdf_path)
+    return render_template('admin_settings.html', settings=get_settings(),
+                           msg=f'📧 فاتورة #{invoice_id}: {"✅ " + msg if ok else "❌ " + msg}')
+
+# ====================== فاتورة PDF ======================
+from fpdf import FPDF
+import arabic_reshaper
+from bidi.algorithm import get_display
+
+class InvoicePDF(FPDF):
+    def add_arabic_font(self):
+        self.add_font('Arabic', '', r'C:\Windows\Fonts\arial.ttf', uni=True)
+
+def generate_invoice_pdf(invoice_id):
+    conn = sqlite3.connect('clinic.db')
+    c = conn.cursor()
+    c.execute('''
+        SELECT p.name, p.email, p.address, i.created_at, i.total, i.status, a.appointment_date
+        FROM invoices i JOIN patients p ON i.patient_id = p.id
+        LEFT JOIN appointments a ON i.appointment_id = a.id
+        WHERE i.id = ?
+    ''', (invoice_id,))
+    inv = c.fetchone()
+    c.execute('SELECT description, price FROM invoice_items WHERE invoice_id=?', (invoice_id,))
+    items = c.fetchall()
+    conn.close()
+    if not inv:
+        return None
+    name, email, address, created_at, total, status, appt_date = inv
+
+    pdf = InvoicePDF()
+    pdf.add_page()
+    try:
+        pdf.add_arabic_font()
+    except Exception as e:
+        print(f'[invoice] فشل تحميل الخط: {e}')
+        return None
+    pdf.set_font('Arabic', '', 16)
+    pdf.cell(0, 12, get_display(arabic_reshaper.reshape(f'{get_clinic_name()} - فاتورة علاج')), align='C')
+    pdf.ln(14)
+    pdf.set_font('Arabic', '', 12)
+    pdf.cell(0, 10, get_display(arabic_reshaper.reshape(f'فاتورة رقم: #{invoice_id}')), align='C')
+    pdf.ln(10)
+    pdf.cell(0, 10, get_display(arabic_reshaper.reshape(f'تاريخ الإصدار: {created_at}')), align='C')
+    pdf.ln(10)
+    pdf.cell(0, 10, get_display(arabic_reshaper.reshape(f'تاريخ الزيارة: {appt_date or "—"}')), align='C')
+    pdf.ln(12)
+    pdf.set_font('Arabic', '', 11)
+    pdf.cell(0, 10, get_display(arabic_reshaper.reshape(f'المريض: {name}')), align='C')
+    pdf.ln(8)
+    if email:
+        pdf.cell(0, 10, get_display(arabic_reshaper.reshape(f'البريد: {email}')), align='C')
+        pdf.ln(8)
+    if address:
+        pdf.cell(0, 10, get_display(arabic_reshaper.reshape(f'التشخيص: {address}')), align='C')
+    pdf.ln(12)
+
+    col_widths = [80, 60, 45]
+    headers = ['الخدمة', 'السعر (ج.م)', 'البيان']
+    pdf.set_font('Arabic', '', 10)
+    for i, header in enumerate(headers):
+        pdf.cell(col_widths[i], 10, get_display(arabic_reshaper.reshape(header)), border=1, align='C')
+    pdf.ln()
+    for desc, price in items:
+        pdf.cell(col_widths[2], 10, get_display(arabic_reshaper.reshape(str(desc))), border=1, align='C')
+        pdf.cell(col_widths[1], 10, get_display(arabic_reshaper.reshape(str(price))), border=1, align='C')
+        pdf.cell(col_widths[0], 10, '', border=1, align='C')
+        pdf.ln()
+    pdf.set_font('Arabic', '', 12)
+    pdf.cell(80, 12, get_display(arabic_reshaper.reshape(f'الإجمالي: {total} ج.م')), border=1, align='C')
+    pdf.cell(60, 12, '', border=1, align='C')
+    pdf.cell(45, 12, get_display(arabic_reshaper.reshape(f'({status})')), border=1, align='C')
+    pdf.ln(20)
+    pdf.set_font('Arabic', '', 11)
+    pdf.cell(0, 10, get_display(arabic_reshaper.reshape(f'شكراً لثقتكم ب{get_clinic_name()} 🦷')), align='C')
+
+    filename = f'invoice_{invoice_id}.pdf'
+    pdf.output(filename)
+    return filename
+
+@app.route('/admin/invoices/<int:invoice_id>/pdf')
+def admin_invoice_pdf(invoice_id):
+    if not session.get('admin'):
+        return redirect('/admin/login')
+    pdf_path = generate_invoice_pdf(invoice_id)
+    if not pdf_path:
+        return "تعذر إنشاء PDF", 500
+    return f'''
+    <html dir="rtl"><body style="font-family:Segoe UI; text-align:center; padding:40px;">
+    <h2 style="color:#0077b6;">✅ تم إنشاء ملف الفاتورة بنجاح</h2>
+    <p>الملف: {pdf_path}</p>
+    <a href="/admin/invoices/{invoice_id}" style="color:#0077b6;">العودة للفاتورة</a>
+    </body></html>
+    '''
+
 # ====================== PDF Generation ======================
 from fpdf import FPDF
 import arabic_reshaper
@@ -234,7 +682,7 @@ def admin_pdf():
     pdf.add_arabic_font()
 
     pdf.set_font('Arabic', '', 16)
-    title = 'عيادة دنتال كير - جدول مواعيد الأسبوع'
+    title = f'{get_clinic_name()} - جدول مواعيد الأسبوع'
     pdf.cell(0, 12, get_display(arabic_reshaper.reshape(title)), align='C')
     pdf.ln(15)
 
@@ -249,7 +697,7 @@ def admin_pdf():
         pdf.cell(0, 10, get_display(arabic_reshaper.reshape(no_data)), align='C')
     else:
         col_widths = [15, 30, 25, 40, 35, 35]
-        headers = ['م', 'التاريخ', 'الوقت', 'الاسم', 'نوع الحجز', 'مكان السكن']
+        headers = ['م', 'التاريخ', 'الوقت', 'الاسم', 'نوع الحجز', 'تشخيص الحالة']
         pdf.set_font('Arabic', '', 10)
         for i, header in enumerate(headers):
             reshaped = arabic_reshaper.reshape(header)

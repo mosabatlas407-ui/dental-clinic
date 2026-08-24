@@ -2,7 +2,7 @@
 <html dir="rtl" lang="ar">
 <head>
     <meta charset="UTF-8">
-    <title>عيادة دنتال كير - الرئيسية</title>
+    <title>{{ clinic.name }} - الرئيسية</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -114,11 +114,11 @@
 
     <!-- الترويسة -->
     <div class="header">
-        <h1>🦷 دنتال كير - عيادة الأسنان الذكية</h1>
+        <h1>🦷 {{ clinic.name }}</h1>
         <div class="branches">
-            <span>📍 مصر الجديدة</span>
-            <span>📍 مدينة نصر</span>
-            <span>📍 المعادي</span>
+            {% for branch in clinic.branch_list %}
+            <span>📍 {{ branch }}</span>
+            {% endfor %}
         </div>
     </div>
 
@@ -150,12 +150,9 @@
 
     <!-- شريط التواصل الاجتماعي -->
     <div class="social-footer">
-        <!-- واتساب (استبدل الرقم برقم العيادة) -->
-        <a href="https://wa.me/201000000000" target="_blank" title="واتساب">💬</a>
-        <!-- فيسبوك -->
-        <a href="https://facebook.com/DentalCare" target="_blank" title="فيسبوك">📘</a>
-        <!-- انستغرام -->
-        <a href="https://instagram.com/DentalCare" target="_blank" title="انستغرام">📷</a>
+        <a href="https://wa.me/{{ clinic.whatsapp }}" target="_blank" title="واتساب">💬</a>
+        <a href="{{ clinic.facebook }}" target="_blank" title="فيسبوك">📘</a>
+        <a href="{{ clinic.instagram }}" target="_blank" title="انستغرام">📷</a>
     </div>
 
     <script>

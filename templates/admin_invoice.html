@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8"><title>فاتورة #{{ inv[0] }}</title>
+    <style>
+        body { font-family: 'Segoe UI'; background: #f0f4f8; padding: 20px; }
+        h2 { color: #e76f51; text-align: center; }
+        .card { max-width: 650px; margin: 20px auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .info { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 15px; }
+        .info div { background: #f8f9fa; padding: 10px 15px; border-radius: 8px; font-size: 0.95rem; }
+        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        th, td { padding: 10px; border-bottom: 1px solid #ddd; text-align: center; }
+        th { background: #e76f51; color: white; }
+        .paid { background: #2a9d8f; color: white; padding: 4px 12px; border-radius: 12px; }
+        .unpaid { background: #e63946; color: white; padding: 4px 12px; border-radius: 12px; }
+        .actions { text-align: center; margin: 15px 0; }
+        .actions a, .actions button { display: inline-block; margin: 5px; color: white; padding: 10px 18px; border-radius: 8px; text-decoration: none; font-size: 0.95rem; font-weight: bold; border: none; cursor: pointer; }
+        .b-pdf { background: #2a9d8f; }
+        .b-mail { background: #3a86ff; }
+        .b-delete { background: #e63946; }
+        .b-pay { background: #e9c46a; color: #333; }
+        form.row-form { display: inline; }
+        .add-form input { padding: 8px; border: 2px solid #e0e0e0; border-radius: 6px; margin: 3px; }
+        .add-form button { background: #0077b6; color: white; padding: 8px 15px; border: none; border-radius: 6px; cursor: pointer; }
+        .total { font-size: 1.4rem; font-weight: bold; color: #e76f51; text-align: left; margin: 10px 0; }
+        .nav { text-align: center; margin-top: 15px; }
+    </style>
+</head>
+<body>
+    <h2>🧾 فاتورة رقم #{{ inv[0] }}</h2>
+    <div class="card">
+        <div class="info">
+            <div>👤 {{ inv[1] }}</div>
+            <div>📧 <span style="direction:ltr; display:inline-block;">{{ inv[2] }}</span></div>
+            <div>📅 الإصدار: {{ inv[3] }}</div>
+            <div>📆 الموعد: #{{ inv[6] or '—' }}</div>
+        </div>
+        <table>
+            <tr><th>الخدمة</th><th>السعر (ج.م)</th><th></th></tr>
+            {% for item in items %}
+            <tr>
+                <td>{{ item[1] }}</td>
+                <td>{{ item[2] }}</td>
+                <td>
+                    <form action="/admin/invoices/{{ inv[0] }}" method="post" style="display:inline;">
+                        <input type="hidden" name="action" value="delete_item">
+                        <input type="hidden" name="item_id" value="{{ item[0] }}">
+                        <button type="submit" style="background:#e63946; color:white; border:none; border-radius:5px; padding:4px 10px; cursor:pointer;">حذف</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+        <div class="total">الإجمالي: {{ inv[4] }} ج.م</div>
+        <div style="text-align:center; margin:10px 0;">
+            {% if inv[5] == 'مدفوعة' %}<span class="paid">مدفوعة ✅</span>{% else %}<span class="unpaid">غير مدفوعة</span>{% endif %}
+        </div>
+        <div class="add-form">
+            <form action="/admin/invoices/{{ inv[0] }}" method="post" style="text-align:center;">
+                <input type="hidden" name="action" value="add_item">
+                <input type="text" name="description" placeholder="اسم الخدمة" required>
+                <input type="number" name="price" placeholder="السعر (ج.م)" min="0" step="0.01" required>
+                <button type="submit">➕ إضافة خدمة</button>
+            </form>
+        </div>
+        <div class="actions">
+            <form action="/admin/invoices/{{ inv[0] }}" method="post" style="display:inline;">
+                <input type="hidden" name="action" value="toggle_status">
+                <button type="submit" class="b-pay">{% if inv[5] == 'مدفوعة' %}↩️ إلغاء الدفع{% else %}💵 تأكيد الدفع{% endif %}</button>
+            </form>
+            <a href="/admin/invoices/{{ inv[0] }}/pdf" class="b-pdf">📄 طباعة PDF</a>
+            <a href="/admin/invoices/{{ inv[0] }}/email" class="b-mail">📧 إرسال للمريض</a>
+            <a href="/admin/invoices/{{ inv[0] }}/delete" class="b-delete" onclick="return confirm('حذف الفاتورة نهائياً؟')">🗑️ حذف</a>
+        </div>
+        <div class="nav"><a href="/admin/invoices">← كل الفواتير</a></div>
+    </div>
+</body>
+</html>

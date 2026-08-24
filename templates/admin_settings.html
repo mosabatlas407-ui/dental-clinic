@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8"><title>الإعدادات</title>
+    <style>
+        body { font-family: 'Segoe UI'; background: #f0f4f8; padding: 20px; }
+        h2 { color: #0077b6; text-align: center; }
+        h3 { color: #0077b6; margin: 0 0 15px; }
+        .card { max-width: 550px; margin: 20px auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        label { display: block; margin: 12px 0 5px; font-weight: 600; }
+        input, textarea { width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1rem; font-family: 'Segoe UI'; }
+        textarea { resize: vertical; min-height: 70px; }
+        input:focus, textarea:focus { border-color: #0077b6; outline: none; }
+        input.ltr { direction: ltr; text-align: left; }
+        button { width: 100%; padding: 12px; background: #0077b6; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; margin-top: 15px; cursor: pointer; }
+        button:hover { background: #005f8a; }
+        .msg { text-align: center; padding: 12px; border-radius: 8px; margin: 15px auto; max-width: 550px; font-weight: bold; background: #e8f6ff; color: #0077b6; }
+        .nav { display: flex; justify-content: center; gap: 15px; margin: 15px 0; flex-wrap: wrap; }
+        .nav a { background: #0077b6; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; }
+        .hint { font-size: 0.85rem; color: #777; margin-top: 5px; line-height: 1.7; }
+        .status { text-align: center; font-weight: bold; margin-bottom: 10px; }
+        .status.ok { color: #2a9d8f; }
+        .status.no { color: #e63946; }
+    </style>
+</head>
+<body>
+    {% if msg %}<div class="msg">{{ msg }}</div>{% endif %}
+    <div class="nav">
+        <a href="/admin/dashboard">📅 المواعيد</a>
+        <a href="/admin/invoices">🧾 الفواتير</a>
+        <a href="/admin/prices">💰 الأسعار</a>
+        <a href="/admin/settings">⚙️ الإعدادات</a>
+    </div>
+    <h2>⚙️ إعدادات النظام</h2>
+
+    <div class="card">
+        <h3>🏥 بيانات العيادة</h3>
+        <p class="hint">تظهر في الصفحة الرئيسية، رسائل المرضى، وملفات PDF</p>
+        <form action="/admin/settings" method="post">
+            <label>اسم العيادة:</label>
+            <input type="text" name="clinic_name" value="{{ settings.get('clinic_name','') }}" required>
+            <label>الفروع (فرع في كل سطر):</label>
+            <textarea name="branches">{{ settings.get('branches','') }}</textarea>
+            <label>رقم الواتساب (بكود الدولة بدون +):</label>
+            <input type="text" name="whatsapp" class="ltr" value="{{ settings.get('whatsapp','') }}" placeholder="201000000000">
+            <label>رابط صفحة فيسبوك:</label>
+            <input type="url" name="facebook" class="ltr" value="{{ settings.get('facebook','') }}">
+            <label>رابط انستغرام:</label>
+            <input type="url" name="instagram" class="ltr" value="{{ settings.get('instagram','') }}">
+            <label>بريد العيادة (للعرض والتواصل):</label>
+            <input type="email" name="clinic_email" class="ltr" value="{{ settings.get('clinic_email','') }}">
+            <button type="submit">💾 حفظ بيانات العيادة</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h3>📧 بريد الإرسال (Gmail SMTP)</h3>
+        {% if settings.get('smtp_email') and settings.get('smtp_password') %}
+            <p class="status ok">✅ الإرسال مفعّل عبر: {{ settings.get('smtp_email') }}</p>
+        {% else %}
+            <p class="status no">⚠️ البريد غير مضبوط — التذكيرات التلقائية متوقفة</p>
+        {% endif %}
+        <form action="/admin/settings" method="post">
+            <label>بريد Gmail المرسل:</label>
+            <input type="email" name="smtp_email" value="{{ settings.get('smtp_email','') }}" placeholder="clinic@gmail.com">
+            <label>كلمة مرور التطبيق (App Password):</label>
+            <input type="password" name="smtp_password" value="{{ settings.get('smtp_password','') }}" placeholder="16 حرفاً">
+            <button type="submit">💾 حفظ بيانات البريد</button>
+        </form>
+        <div class="hint">
+            🔑 من <a href="https://myaccount.google.com/apppasswords" target="_blank">myaccount.google.com/apppasswords</a> — وتأكد أن لوحة المفاتيح إنجليزي قبل الكتابة
+        </div>
+        <form action="/admin/settings/test" method="post" style="margin-top:10px;">
+            <label>🔌 اختبار سريع — أرسل بريداً تجريبياً إلى:</label>
+            <input type="email" name="test_email" class="ltr" placeholder="اكتب بريدك هنا" required>
+            <button type="submit" style="background:#2a9d8f;">🔌 إرسال بريد تجريبي</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h3>🔑 تغيير كلمة مرور اللوحة</h3>
+        <form action="/admin/change_password" method="post">
+            <label>كلمة المرور الحالية:</label>
+            <input type="password" name="current_password" required>
+            <label>كلمة المرور الجديدة (6 أحرف على الأقل):</label>
+            <input type="password" name="new_password" minlength="6" required>
+            <label>تأكيد كلمة المرور الجديدة:</label>
+            <input type="password" name="confirm_password" required>
+            <button type="submit" style="background:#e76f51;">🔑 تغيير كلمة المرور</button>
+        </form>
+    </div>
+    <p style="text-align:center;"><a href="/admin/dashboard">العودة للوحة التحكم</a></p>
+</body>
+</html>
