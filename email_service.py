@@ -1,5 +1,5 @@
 import smtplib
-import sqlite3
+import db
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.application import MIMEApplication
@@ -7,13 +7,13 @@ from email.utils import formataddr
 import os
 
 def get_clinic_name():
-    conn = sqlite3.connect('clinic.db')
+    conn = db.connect()
     c = conn.cursor()
     try:
         c.execute("SELECT value FROM settings WHERE key='clinic_name'")
         row = c.fetchone()
         return (row[0] if row and row[0] else 'عيادة دنتال كير')
-    except sqlite3.OperationalError:
+    except Exception:
         return 'عيادة دنتال كير'
     finally:
         conn.close()
@@ -26,7 +26,7 @@ def refresh_clinic_name():
     return CLINIC_NAME
 
 def get_settings():
-    conn = sqlite3.connect('clinic.db')
+    conn = db.connect()
     c = conn.cursor()
     c.execute('SELECT key, value FROM settings')
     rows = c.fetchall()
@@ -36,6 +36,19 @@ def get_settings():
 def smtp_configured():
     s = get_settings()
     return bool(s.get('smtp_email') and s.get('smtp_password'))
+
+SMTP_DEFAULTS = {'host': 'smtp.gmail.com', 'port': 465, 'secure': 'ssl'}
+
+def smtp_connection(settings):
+    """فتح اتصال SMTP حسب الإعدادات (جوجل افتراضياً أو مزود بديل)"""
+    host = settings.get('smtp_host') or SMTP_DEFAULTS['host']
+    port = int(settings.get('smtp_port') or SMTP_DEFAULTS['port'])
+    secure = (settings.get('smtp_secure') or SMTP_DEFAULTS['secure']).strip().lower()
+    if secure == 'tls':
+        server = smtplib.SMTP(host, port, timeout=30)
+        server.starttls()
+        return server
+    return smtplib.SMTP_SSL(host, port, timeout=30)
 
 def send_email(to_email, subject, html_body, attachment_path=None):
     settings = get_settings()
@@ -57,7 +70,7 @@ def send_email(to_email, subject, html_body, attachment_path=None):
             msg.attach(part)
 
     try:
-        server = smtplib.SMTP_SSL('smtp.gmail.com', 465, timeout=30)
+        server = smtp_connection(settings)
         server.login(smtp_email, smtp_password)
         server.sendmail(smtp_email, [to_email], msg.as_string())
         server.quit()

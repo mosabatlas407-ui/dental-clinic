@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, session
-import sqlite3
+import db
 import hashlib
 from datetime import datetime, timedelta
 import traceback, sys
@@ -52,65 +52,16 @@ def get_price(booking_type):
     return float(prices.get(f'price_{booking_type}', DEFAULT_PRICES.get(booking_type, 0)))
 
 def init_db():
-    conn = sqlite3.connect('clinic.db')
+    conn = db.connect()
     c = conn.cursor()
-    c.execute('''
-        CREATE TABLE IF NOT EXISTS patients (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            age INTEGER,
-            gender TEXT,
-            painkiller TEXT,
-            address TEXT,
-            booking_type TEXT,
-            email TEXT DEFAULT '',
-            initial_diagnosis TEXT DEFAULT 'تحت الفحص'
-        )
-    ''')
-    c.execute('''
-        CREATE TABLE IF NOT EXISTS appointments (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            patient_id INTEGER,
-            appointment_date TEXT NOT NULL,
-            appointment_time TEXT NOT NULL,
-            status TEXT DEFAULT 'محجوز',
-            FOREIGN KEY(patient_id) REFERENCES patients(id)
-        )
-    ''')
-    c.execute('''
-        CREATE TABLE IF NOT EXISTS settings (
-            key TEXT PRIMARY KEY,
-            value TEXT
-        )
-    ''')
-    c.execute('''
-        CREATE TABLE IF NOT EXISTS invoices (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            patient_id INTEGER NOT NULL,
-            appointment_id INTEGER,
-            total REAL DEFAULT 0,
-            status TEXT DEFAULT 'غير مدفوعة',
-            created_at TEXT,
-            FOREIGN KEY(patient_id) REFERENCES patients(id)
-        )
-    ''')
-    c.execute('''
-        CREATE TABLE IF NOT EXISTS invoice_items (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            invoice_id INTEGER NOT NULL,
-            description TEXT NOT NULL,
-            price REAL DEFAULT 0,
-            FOREIGN KEY(invoice_id) REFERENCES invoices(id)
-        )
-    ''')
+    db.init_schema(c)
     try:
         c.execute("ALTER TABLE patients ADD COLUMN email TEXT DEFAULT ''")
-    except sqlite3.OperationalError:
+    except Exception:
         pass
     for key, value in CLINIC_DEFAULTS.items():
-        c.execute('INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)', (key, value))
-    c.execute('INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)',
-              ('admin_password_hash', hash_password('admin123')))
+        db.set_setting(c, key, value, ignore_existing=True)
+    db.set_setting(c, 'admin_password_hash', hash_password('admin123'), ignore_existing=True)
     conn.commit()
     conn.close()
 
@@ -142,20 +93,20 @@ def booking_form():
 @app.route('/book', methods=['POST'])
 def book():
     name = request.form['name']
-    age = request.form['age']
+    age = str(request.form.get('age', '')).strip()
+    age = int(age) if age.isdigit() else None
     gender = request.form['gender']
     painkiller = ''
     address = request.form['address']
     email = request.form.get('email', '').strip()
     booking_type = request.form['booking_type']
 
-    conn = sqlite3.connect('clinic.db')
+    conn = db.connect()
     c = conn.cursor()
-    c.execute('''
+    patient_id = db.insert_returning_id(c, '''
         INSERT INTO patients (name, age, gender, painkiller, address, email, booking_type)
         VALUES (?, ?, ?, ?, ?, ?, ?)
     ''', (name, age, gender, painkiller, address, email, booking_type))
-    patient_id = c.lastrowid
 
     appointment_date, appointment_time = find_next_available_slot(c)
 
@@ -237,7 +188,7 @@ def admin_logout():
 def admin_dashboard():
     if not session.get('admin'):
         return redirect('/admin/login')
-    conn = sqlite3.connect('clinic.db')
+    conn = db.connect()
     c = conn.cursor()
     # استخدام تاريخ اليوم بصيغة نصية لتجنب مشاكل التوقيت
     today_str = datetime.now().date().strftime('%Y-%m-%d')
@@ -256,7 +207,7 @@ def admin_dashboard():
 def admin_cancel(appointment_id):
     if not session.get('admin'):
         return redirect('/admin/login')
-    conn = sqlite3.connect('clinic.db')
+    conn = db.connect()
     c = conn.cursor()
     c.execute('DELETE FROM appointments WHERE id=?', (appointment_id,))
     conn.commit()
@@ -267,7 +218,7 @@ def admin_cancel(appointment_id):
 def admin_edit(appointment_id):
     if not session.get('admin'):
         return redirect('/admin/login')
-    conn = sqlite3.connect('clinic.db')
+    conn = db.connect()
     c = conn.cursor()
     if request.method == 'POST':
         new_date = request.form['new_date']
@@ -294,12 +245,12 @@ def admin_prices():
         return redirect('/admin/login')
     msg = ''
     if request.method == 'POST':
-        conn = sqlite3.connect('clinic.db')
+        conn = db.connect()
         c = conn.cursor()
         for key in ['price_consultation', 'price_urgent', 'price_surgery']:
             val = request.form.get(key, '').strip()
             if val:
-                c.execute('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)', (key, val))
+                db.set_setting(c, key, val)
         conn.commit()
         conn.close()
         msg = '✅ تم حفظ الأسعار'
@@ -313,17 +264,16 @@ def admin_settings():
         return redirect('/admin/login')
     msg = ''
     if request.method == 'POST':
-        profile_keys = list(CLINIC_DEFAULTS.keys()) + ['smtp_email', 'smtp_password']
-        conn = sqlite3.connect('clinic.db')
+        profile_keys = list(CLINIC_DEFAULTS.keys()) + ['smtp_email', 'smtp_password',
+                                                       'smtp_host', 'smtp_port', 'smtp_secure']
+        conn = db.connect()
         c = conn.cursor()
         for key in profile_keys:
             val = request.form.get(key)
             if val is not None and val.strip() != '':
-                c.execute('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)',
-                          (key, val.strip()))
-            elif key in ('smtp_email', 'smtp_password') and val is not None:
-                c.execute('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)',
-                          (key, ''))
+                db.set_setting(c, key, val.strip())
+            elif key in ('smtp_email', 'smtp_password', 'smtp_host', 'smtp_port', 'smtp_secure') and val is not None:
+                db.set_setting(c, key, '')
         conn.commit()
         conn.close()
         refresh_clinic_name()
@@ -345,10 +295,9 @@ def admin_change_password():
     elif new != confirm:
         msg = '❌ كلمتا المرور غير متطابقتين'
     else:
-        conn = sqlite3.connect('clinic.db')
+        conn = db.connect()
         c = conn.cursor()
-        c.execute('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)',
-                  ('admin_password_hash', hash_password(new)))
+        db.set_setting(c, 'admin_password_hash', hash_password(new))
         conn.commit()
         conn.close()
         msg = '✅ تم تغيير كلمة المرور بنجاح'
@@ -371,7 +320,7 @@ def admin_settings_test():
 def admin_remind(appointment_id):
     if not session.get('admin'):
         return redirect('/admin/login')
-    conn = sqlite3.connect('clinic.db')
+    conn = db.connect()
     c = conn.cursor()
     c.execute('''
         SELECT p.name, p.email, a.appointment_date, a.appointment_time, p.booking_type
@@ -396,7 +345,7 @@ def send_daily_reminders():
         print('[reminder] SMTP غير مضبوط - تخطي الإرسال التلقائي')
         return
     tomorrow = (datetime.now().date() + timedelta(days=1)).strftime('%Y-%m-%d')
-    conn = sqlite3.connect('clinic.db')
+    conn = db.connect()
     c = conn.cursor()
     c.execute('''
         SELECT p.name, p.email, a.id, a.appointment_date, a.appointment_time, p.booking_type
@@ -433,7 +382,7 @@ if not app.debug or os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
 def admin_complete(appointment_id):
     if not session.get('admin'):
         return redirect('/admin/login')
-    conn = sqlite3.connect('clinic.db')
+    conn = db.connect()
     c = conn.cursor()
     c.execute('''
         SELECT a.patient_id, p.booking_type, a.appointment_date
@@ -446,11 +395,10 @@ def admin_complete(appointment_id):
         return "الموعد غير موجود", 404
     patient_id, booking_type, appointment_date = row
     c.execute('UPDATE appointments SET status=? WHERE id=?', ('مكتمل', appointment_id))
-    c.execute('''
+    invoice_id = db.insert_returning_id(c, '''
         INSERT INTO invoices (patient_id, appointment_id, created_at)
         VALUES (?, ?, ?)
     ''', (patient_id, appointment_id, datetime.now().strftime('%Y-%m-%d %H:%M')))
-    invoice_id = c.lastrowid
     service_ar = {'consultation': 'فحص واستشارة', 'urgent': 'حالة طارئة', 'surgery': 'عملية جراحية'}.get(booking_type, booking_type)
     default_price = get_price(booking_type)
     c.execute('INSERT INTO invoice_items (invoice_id, description, price) VALUES (?, ?, ?)',
@@ -465,7 +413,7 @@ def admin_complete(appointment_id):
 def admin_invoices():
     if not session.get('admin'):
         return redirect('/admin/login')
-    conn = sqlite3.connect('clinic.db')
+    conn = db.connect()
     c = conn.cursor()
     c.execute('''
         SELECT i.id, p.name, i.created_at, i.total, i.status, a.appointment_date
@@ -484,7 +432,7 @@ def admin_invoice(invoice_id):
         return redirect('/admin/login')
     if request.method == 'POST':
         action = request.form.get('action')
-        conn = sqlite3.connect('clinic.db')
+        conn = db.connect()
         c = conn.cursor()
         if action == 'add_item':
             description = request.form.get('description', '').strip()
@@ -496,14 +444,14 @@ def admin_invoice(invoice_id):
             item_id = request.form.get('item_id')
             c.execute('DELETE FROM invoice_items WHERE id=? AND invoice_id=?', (item_id, invoice_id))
         elif action == 'toggle_status':
-            c.execute('UPDATE invoices SET status = CASE WHEN status="مدفوعة" THEN "غير مدفوعة" ELSE "مدفوعة" END WHERE id=?',
+            c.execute("UPDATE invoices SET status = CASE WHEN status='مدفوعة' THEN 'غير مدفوعة' ELSE 'مدفوعة' END WHERE id=?",
                       (invoice_id,))
         c.execute('UPDATE invoices SET total = (SELECT COALESCE(SUM(price),0) FROM invoice_items WHERE invoice_id=?) WHERE id=?',
                   (invoice_id, invoice_id))
         conn.commit()
         conn.close()
         return redirect(f'/admin/invoices/{invoice_id}')
-    conn = sqlite3.connect('clinic.db')
+    conn = db.connect()
     c = conn.cursor()
     c.execute('''
         SELECT i.id, p.name, p.email, i.created_at, i.total, i.status, i.appointment_id
@@ -523,7 +471,7 @@ def admin_invoice(invoice_id):
 def admin_invoice_delete(invoice_id):
     if not session.get('admin'):
         return redirect('/admin/login')
-    conn = sqlite3.connect('clinic.db')
+    conn = db.connect()
     c = conn.cursor()
     c.execute('DELETE FROM invoice_items WHERE invoice_id=?', (invoice_id,))
     c.execute('DELETE FROM invoices WHERE id=?', (invoice_id,))
@@ -535,7 +483,7 @@ def admin_invoice_delete(invoice_id):
 def admin_invoice_email(invoice_id):
     if not session.get('admin'):
         return redirect('/admin/login')
-    conn = sqlite3.connect('clinic.db')
+    conn = db.connect()
     c = conn.cursor()
     c.execute('''
         SELECT p.name, p.email, a.appointment_date
@@ -580,7 +528,7 @@ class InvoicePDF(FPDF):
         return False
 
 def generate_invoice_pdf(invoice_id):
-    conn = sqlite3.connect('clinic.db')
+    conn = db.connect()
     c = conn.cursor()
     c.execute('''
         SELECT p.name, p.email, p.address, i.created_at, i.total, i.status, a.appointment_date
@@ -677,7 +625,7 @@ def admin_pdf():
     if not session.get('admin'):
         return redirect('/admin/login')
 
-    conn = sqlite3.connect('clinic.db')
+    conn = db.connect()
     c = conn.cursor()
     today = datetime.now().date()
     

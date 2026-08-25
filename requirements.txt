@@ -4,3 +4,4 @@ fpdf2
 arabic_reshaper
 python-bidi
 apscheduler
+psycopg2-binary

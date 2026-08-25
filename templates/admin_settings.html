@@ -61,14 +61,24 @@
             <p class="status no">⚠️ البريد غير مضبوط — التذكيرات التلقائية متوقفة</p>
         {% endif %}
         <form action="/admin/settings" method="post">
-            <label>بريد Gmail المرسل:</label>
+            <label>بريد المرسل:</label>
             <input type="email" name="smtp_email" value="{{ settings.get('smtp_email','') }}" placeholder="clinic@gmail.com">
-            <label>كلمة مرور التطبيق (App Password):</label>
-            <input type="password" name="smtp_password" value="{{ settings.get('smtp_password','') }}" placeholder="16 حرفاً">
+            <label>كلمة مرور البريد / كلمة مرور التطبيق:</label>
+            <input type="password" name="smtp_password" value="{{ settings.get('smtp_password','') }}" placeholder="16 حرفاً لجوجل">
+            <details style="margin-top:8px;">
+                <summary style="cursor:pointer;color:#0077b6;">⚙️ مزود بريد بديل (اختياري — سيبه فاضي لو بتستخدم Gmail)</summary>
+                <label>سيرفر SMTP:</label>
+                <input type="text" name="smtp_host" class="ltr" value="{{ settings.get('smtp_host','') }}" placeholder="smtp.gmail.com">
+                <label>البورت:</label>
+                <input type="text" name="smtp_port" class="ltr" value="{{ settings.get('smtp_port','') }}" placeholder="465">
+                <label>نوع التشفير:</label>
+                <input type="text" name="smtp_secure" class="ltr" value="{{ settings.get('smtp_secure','') }}" placeholder="ssl أو tls">
+            </details>
             <button type="submit">💾 حفظ بيانات البريد</button>
         </form>
         <div class="hint">
-            🔑 من <a href="https://myaccount.google.com/apppasswords" target="_blank">myaccount.google.com/apppasswords</a> — وتأكد أن لوحة المفاتيح إنجليزي قبل الكتابة
+            🔑 Gmail: من <a href="https://myaccount.google.com/apppasswords" target="_blank">myaccount.google.com/apppasswords</a><br>
+            📮 Brevo (بديل أسهل): سجل في <a href="https://app.brevo.com" target="_blank">app.brevo.com</a> ← SMTP & API ← خد السيرفر والبورت والمفتاح وحطهم هنا
         </div>
         <form action="/admin/settings/test" method="post" style="margin-top:10px;">
             <label>🔌 اختبار سريع — أرسل بريداً تجريبياً إلى:</label>
