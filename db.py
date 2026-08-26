@@ -11,6 +11,9 @@ if IS_PG:
     import psycopg2
     if DATABASE_URL.startswith('postgres://'):
         DATABASE_URL = 'postgresql://' + DATABASE_URL.split('://', 1)[1]
+    if 'connect_timeout' not in DATABASE_URL:
+        sep = '&' if '?' in DATABASE_URL else '?'
+        DATABASE_URL += f'{sep}connect_timeout=10'
 
 
 def translate(sql):
