@@ -55,10 +55,18 @@ def init_db():
     conn = db.connect()
     c = conn.cursor()
     db.init_schema(c)
+    # ترحيل قديم: إضافة عمود email لو مش موجود.
+    # في PostgreSQL فشل أي أمر بيلغي المعاملة كلها، فنستخدم SAVEPOINT للعزل.
     try:
+        c.execute('SAVEPOINT legacy_email_col')
         c.execute("ALTER TABLE patients ADD COLUMN email TEXT DEFAULT ''")
+        c.execute('RELEASE SAVEPOINT legacy_email_col')
     except Exception:
-        pass
+        try:
+            c.execute('ROLLBACK TO SAVEPOINT legacy_email_col')
+            c.execute('RELEASE SAVEPOINT legacy_email_col')
+        except Exception:
+            pass
     for key, value in CLINIC_DEFAULTS.items():
         db.set_setting(c, key, value, ignore_existing=True)
     db.set_setting(c, 'admin_password_hash', hash_password('admin123'), ignore_existing=True)
