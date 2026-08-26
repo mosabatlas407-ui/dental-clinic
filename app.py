@@ -303,6 +303,29 @@ def admin_change_password():
         msg = '✅ تم تغيير كلمة المرور بنجاح'
     return render_template('admin_settings.html', settings=get_settings(), msg=msg)
 
+@app.route('/admin/envcheck')
+def admin_envcheck():
+    """فحص تشخيصي: هل DATABASE_URL واصل للتطبيق وسليم؟"""
+    if not session.get('admin'):
+        return redirect('/admin/login')
+    raw = os.environ.get('DATABASE_URL', '')
+    info = (
+        f"متغير DATABASE_URL موجود: {'نعم' if raw else 'لا ❌'}<br>"
+        f"طول النص: {len(raw)} حرف<br>"
+        f"أول 15 حرف: <code>{raw[:15]}</code><br>"
+        f"آخر 15 حرف: <code>{raw[-15:] if len(raw) >= 30 else ''}</code><br>"
+        f"عدد علامات @: {raw.count('@')}<br>"
+        f"المحرك الفعلي المستخدم: {'PostgreSQL ✅' if db.IS_PG else 'SQLite مؤقت ❌'}"
+    )
+    return f'''
+    <html dir="rtl" lang="ar"><body style="font-family:'Segoe UI';padding:30px;background:#f0f4f8;">
+    <div style="max-width:600px;margin:auto;background:white;padding:25px;border-radius:12px;">
+        <h3 style="color:#0077b6;">🔍 فحص قاعدة البيانات</h3>
+        <p style="line-height:2;">{info}</p>
+        <a href="/admin/settings">← رجوع للإعدادات</a>
+    </div></body></html>
+    '''
+
 @app.route('/admin/settings/test', methods=['POST'])
 def admin_settings_test():
     if not session.get('admin'):
