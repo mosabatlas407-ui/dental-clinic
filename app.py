@@ -130,27 +130,42 @@ def book():
         if not ok:
             print(f"[email] تأكيد الحجز فشل: {msg}")
 
+    type_labels = {'consultation': 'استشارة', 'urgent': 'حجز مستعجل', 'surgery': 'عملية'}
+    clinic = get_clinic()
+    label = type_labels.get(booking_type, booking_type)
     return f'''
     <html dir="rtl" lang="ar">
-    <head><meta charset="UTF-8"><title>تم الحجز</title>
+    <head><meta charset="UTF-8"><title>تم الحجز بنجاح</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-        body {{ font-family: 'Segoe UI'; background: #f0f4f8; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }}
-        .card {{ background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); text-align: center; }}
-        h2 {{ color: #0077b6; }}
-        .details {{ text-align: right; margin: 20px 0; line-height: 2; }}
-        a {{ display: inline-block; margin-top: 20px; padding: 10px 20px; background: #0077b6; color: white; text-decoration: none; border-radius: 8px; }}
+        * {{ box-sizing: border-box; margin: 0; padding: 0; }}
+        body {{ font-family: 'Cairo', sans-serif; background: linear-gradient(160deg, #f0fdf4 0%, #ffffff 60%); display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 24px; }}
+        .card {{ background: #ffffff; padding: 44px 40px; border-radius: 28px; box-shadow: 0 20px 50px -12px rgba(20,184,166,0.18); border: 2px solid #f0fdf4; width: 100%; max-width: 520px; text-align: center; }}
+        .badge {{ width: 72px; height: 72px; background: #e6fffa; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto 20px; }}
+        h2 {{ color: #0d9488; margin-bottom: 8px; }}
+        .sub {{ color: #64748b; font-weight: 600; margin-bottom: 24px; }}
+        .details {{ text-align: right; background: #f0fdf4; border-radius: 18px; padding: 20px 24px; line-height: 2.2; font-weight: 600; color: #0f172a; }}
+        .details strong {{ color: #0d9488; }}
+        .btn {{ display: inline-block; margin-top: 24px; padding: 13px 34px; background: #14b8a6; color: #ffffff; text-decoration: none; border-radius: 9999px; font-family: 'Cairo', sans-serif; font-weight: 800; font-size: 1rem; box-shadow: 0 10px 24px rgba(20,184,166,0.3); transition: all 0.25s; }}
+        .btn:hover {{ background: #0d9488; }}
+        .home {{ display: inline-block; margin-top: 12px; padding: 13px 34px; background: #ffffff; color: #0d9488; text-decoration: none; border-radius: 9999px; font-family: 'Cairo', sans-serif; font-weight: 800; font-size: 1rem; border: 2px solid #e2e8f0; }}
+        .home:hover {{ border-color: #ccfbf1; background: #f0fdf4; }}
     </style></head>
     <body>
         <div class="card">
-            <h2>✅ تم حجز الموعد بنجاح!</h2>
+            <div class="badge">✨</div>
+            <h2>تم حجز الموعد بنجاح!</h2>
+            <p class="sub">{clinic['name']} — سعداء باختيارك لنا</p>
             <div class="details">
                 <p><strong>الاسم:</strong> {name}</p>
-                <p><strong>نوع الحجز:</strong> {booking_type}</p>
+                <p><strong>نوع الحجز:</strong> {label}</p>
                 <p><strong>تشخيص الحالة:</strong> {address}</p>
                 <p><strong>التاريخ:</strong> {appointment_date}</p>
                 <p><strong>الوقت:</strong> {appointment_time}</p>
             </div>
-            <a href="/">العودة للرئيسية</a>
+            <a href="/book?type={booking_type}" class="btn">📅 حجز موعد آخر</a>
+            <br>
+            <a href="/" class="home">🏠 العودة للرئيسية</a>
         </div>
     </body>
     </html>

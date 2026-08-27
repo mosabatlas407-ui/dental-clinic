@@ -1,135 +1,164 @@
 <!DOCTYPE html>
-<html dir="rtl" lang="ar">
+<html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <title>نموذج الحجز - {{ clinic.name }}</title>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: 'Segoe UI', Tahoma;
-            background: linear-gradient(135deg, #e0f7fa, #e1f5fe);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            position: relative;
-        }
-        .bg-icons {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 0;
-            pointer-events: none;
-            opacity: 0.15;
-        }
-        .bg-icons span {
-            position: absolute;
-            font-size: 4rem;
-            animation: float 7s infinite ease-in-out;
-        }
-        @keyframes float {
-            0% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-25px) rotate(10deg); }
-            100% { transform: translateY(0px) rotate(0deg); }
-        }
-        .card {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            padding: 30px 40px;
-            width: 100%;
-            max-width: 550px;
-            z-index: 2;
-            text-align: center;
-        }
-        .card h2 { color: #0077b6; margin-bottom: 15px; }
-        .card .type-badge {
-            display: inline-block;
-            background: #00b4d8;
-            color: white;
-            padding: 8px 20px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            margin-bottom: 20px;
-        }
-        label { display: block; text-align: right; margin: 12px 0 5px; font-weight: 600; color: #333; }
-        input, select {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 1rem;
-            transition: border 0.3s;
-        }
-        input:focus, select:focus { border-color: #0077b6; outline: none; }
-        button {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(90deg, #0077b6, #00b4d8);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            margin-top: 25px;
-            cursor: pointer;
-        }
-        button:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,119,182,0.4); }
-        .home-btn {
-            display: block;
-            width: 100%;
-            margin-top: 15px;
-            padding: 14px;
-            background: #f0f0f0;
-            color: #0077b6;
-            text-align: center;
-            text-decoration: none;
-            border-radius: 10px;
-            font-weight: bold;
-            font-size: 1rem;
-            transition: background 0.3s;
-            border: 1px solid #e0e0e0;
-        }
-        .home-btn:hover { background: #e0e0e0; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>حجز موعد - {{ clinic.name }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-white: #ffffff;
+      --bg-mint-light: #f0fdf4;
+      --bg-mint-soft: #e6fffa;
+      --teal-primary: #14b8a6;
+      --teal-dark: #0d9488;
+      --teal-light: #ccfbf1;
+      --text-dark: #0f172a;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+      --radius-large: 28px;
+      --radius-pill: 9999px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Cairo', system-ui, sans-serif;
+      background: linear-gradient(160deg, var(--bg-mint-light) 0%, var(--bg-white) 60%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      color: var(--text-dark);
+    }
+    .brand {
+      display: flex; align-items: center; gap: 12px;
+      font-size: 1.5rem; font-weight: 900; color: var(--teal-primary);
+      text-decoration: none; margin-bottom: 28px;
+    }
+    .brand-icon {
+      width: 44px; height: 44px;
+      background: var(--teal-light);
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--teal-primary);
+    }
+    .card {
+      background: var(--bg-white);
+      border-radius: var(--radius-large);
+      box-shadow: 0 20px 50px -12px rgba(20, 184, 166, 0.18);
+      padding: 40px;
+      width: 100%;
+      max-width: 560px;
+      border: 2px solid var(--bg-mint-light);
+    }
+    .card h2 { font-size: 1.9rem; color: var(--teal-dark); margin-bottom: 8px; text-align: center; }
+    .type-badge {
+      display: inline-block;
+      background: var(--teal-light);
+      color: var(--teal-dark);
+      padding: 8px 22px;
+      border-radius: var(--radius-pill);
+      font-weight: 800;
+      font-size: 0.95rem;
+      margin: 0 auto 24px;
+      width: fit-content;
+      display: flex;
+    }
+    .type-note { text-align: center; color: var(--text-muted); font-weight: 600; font-size: 0.95rem; margin-bottom: 20px; }
+    label { display: block; text-align: right; margin: 16px 0 6px; font-weight: 700; color: var(--text-dark); font-size: 0.95rem; }
+    input, select {
+      width: 100%;
+      padding: 13px 16px;
+      border: 2px solid var(--border-color);
+      border-radius: 14px;
+      font-size: 1rem;
+      font-family: 'Cairo', sans-serif;
+      color: var(--text-dark);
+      transition: border 0.3s, box-shadow 0.3s;
+      background: var(--bg-white);
+    }
+    input:focus, select:focus {
+      border-color: var(--teal-primary);
+      outline: none;
+      box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.12);
+    }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+      width: 100%;
+      padding: 15px;
+      background: var(--teal-primary); color: #fff;
+      border: none; border-radius: var(--radius-pill);
+      font-family: 'Cairo', sans-serif;
+      font-size: 1.2rem; font-weight: 800;
+      margin-top: 28px;
+      cursor: pointer;
+      box-shadow: 0 10px 24px rgba(20, 184, 166, 0.3);
+      transition: all 0.25s ease;
+    }
+    .btn:hover { background: var(--teal-dark); transform: translateY(-2px); box-shadow: 0 14px 28px rgba(20, 184, 166, 0.4); }
+    .home-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      margin-top: 14px;
+      padding: 13px;
+      background: var(--bg-white);
+      color: var(--teal-dark);
+      text-align: center;
+      text-decoration: none;
+      border-radius: var(--radius-pill);
+      font-family: 'Cairo', sans-serif;
+      font-weight: 800;
+      font-size: 1rem;
+      transition: background 0.3s;
+      border: 2px solid var(--border-color);
+    }
+    .home-btn:hover { background: var(--bg-mint-light); border-color: var(--teal-light); }
+    @media (max-width: 560px) {
+      .card { padding: 28px 20px; }
+    }
+  </style>
 </head>
 <body>
-    <div class="bg-icons">
-        <span style="top:5%; left:5%;">🦷</span>
-        <span style="top:80%; left:10%;">🏥</span>
-        <span style="top:15%; left:80%;">🦷</span>
-        <span style="top:70%; left:85%;">✨</span>
-        <span style="top:50%; left:50%;">🦷</span>
+  <a href="/" class="brand">
+    <div class="brand-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5c-2 0-2.5 1.6-4.2 1.6C5.6 4.1 5 7 4.2 9.3c-.9 2.4.6 5.1 2 6.8.9 1.1 1.4 2.6 2.3 2.6.7 0 .8-2.1 1.9-2.6 1.4-.6 1.5 2.3 2.4 2.3.9 0 .9-2.6 1.9-3.4.9-.7 1.3-1.9 1.7-3.2.5-1.8.4-5.3-.6-6.9-1-1.6-1.3-.3-2.1-.3C15 4.1 14 2.5 12 2.5z"/></svg>
     </div>
-
-    <div class="card">
-        <h2>حجز موعد</h2>
-        <div class="type-badge">
-            {% if booking_type == 'consultation' %} استشارة
-            {% elif booking_type == 'urgent' %} حجز مستعجل
-            {% else %} عملية
-            {% endif %}
-        </div>
-        <form action="/book" method="post">
-            <input type="hidden" name="booking_type" value="{{ booking_type }}">
-            <label>الاسم الكامل:</label>
-            <input type="text" name="name" required>
-            <label>العمر:</label>
-            <input type="number" name="age" min="1" max="120" required>
-            <label>الجنس:</label>
-            <select name="gender" required>
-                <option value="">اختر...</option>
-                <option value="ذكر">ذكر</option>
-                <option value="أنثى">أنثى</option>
-            </select>
-            <label>تشخيص الحالة:</label>
-            <input type="text" name="address" required placeholder="اكتب وصفاً مختصراً للحالة (مثال: ألم في الضرس الخلفي)">
-            <label>البريد الإلكتروني:</label>
-            <input type="email" name="email" required placeholder="لإرسال تأكيد الموعد والتذكيرات">
-            <button type="submit">✨ احجز الآن</button>
-        </form>
-        <a href="/" class="home-btn">🏠 العودة للرئيسية</a>
+    {{ clinic.name }}
+  </a>
+  <div class="card">
+    <h2>حجز موعد</h2>
+    <div class="type-badge">
+      {% if booking_type == 'consultation' %} 🩺 استشارة
+      {% elif booking_type == 'urgent' %} ⚡ حجز مستعجل
+      {% else %} 🏥 عملية
+      {% endif %}
     </div>
+    <div class="type-note">سيُحدد لك أقرب موعد متاح تلقائيًا (الأحد - الخميس)</div>
+    <form action="/book" method="post">
+      <input type="hidden" name="booking_type" value="{{ booking_type }}">
+      <label>الاسم الكامل:</label>
+      <input type="text" name="name" required placeholder="اكتب اسمك الثلاثي">
+      <label>العمر:</label>
+      <input type="number" name="age" min="1" max="120" required placeholder="مثال: 25">
+      <label>الجنس:</label>
+      <select name="gender" required>
+        <option value="">اختر...</option>
+        <option value="ذكر">ذكر</option>
+        <option value="أنثى">أنثى</option>
+      </select>
+      <label>تشخيص الحالة:</label>
+      <input type="text" name="address" required placeholder="اكتب وصفاً مختصراً للحالة (مثال: ألم في الضرس الخلفي)">
+      <label>البريد الإلكتروني:</label>
+      <input type="email" name="email" required placeholder="لإرسال تأكيد الموعد والتذكيرات">
+      <button type="submit" class="btn">✨ احجز الآن</button>
+    </form>
+    <a href="/" class="home-btn">🏠 العودة للرئيسية</a>
+  </div>
 </body>
 </html>

@@ -1,172 +1,471 @@
 <!DOCTYPE html>
-<html dir="rtl" lang="ar">
+<html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <title>{{ clinic.name }} - الرئيسية</title>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: 'Segoe UI', Tahoma;
-            background: linear-gradient(135deg, #e0f7fa, #e1f5fe);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            padding-bottom: 70px; /* مساحة لشريط التواصل */
-        }
-        .bg-icons {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 0; pointer-events: none; opacity: 0.12;
-        }
-        .bg-icons span {
-            position: absolute; font-size: 4rem;
-            animation: float 7s infinite ease-in-out;
-        }
-        @keyframes float {
-            0% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-25px) rotate(10deg); }
-            100% { transform: translateY(0px) rotate(0deg); }
-        }
-        .header {
-            background: linear-gradient(90deg, #0077b6, #00b4d8);
-            color: white; padding: 20px; text-align: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 2;
-        }
-        .header h1 { font-size: 2.2rem; }
-        .branches { margin-top: 10px; }
-        .branches span {
-            background: rgba(255,255,255,0.2); padding: 4px 14px;
-            border-radius: 20px; margin: 0 8px;
-        }
-        .cards-container {
-            flex: 1; display: flex; justify-content: center; align-items: center;
-            gap: 30px; flex-wrap: wrap; padding: 40px 20px; z-index: 2;
-        }
-        .card {
-            background: white; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            width: 250px; padding: 30px 20px; text-align: center;
-            transition: transform 0.3s, box-shadow 0.3s; text-decoration: none; color: #333;
-        }
-        .card:hover { transform: translateY(-10px); box-shadow: 0 15px 35px rgba(0,0,0,0.2); }
-        .card .icon { font-size: 4rem; margin-bottom: 15px; }
-        .card h2 { color: #0077b6; margin-bottom: 10px; }
-        .card p { color: #555; font-size: 0.95rem; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ clinic.name }} | طب أسنان العائلة المريح</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-white: #ffffff;
+      --bg-mint-light: #f0fdf4;
+      --bg-mint-soft: #e6fffa;
+      --teal-primary: #14b8a6;
+      --teal-dark: #0d9488;
+      --teal-light: #ccfbf1;
+      --coral-pop: #ff7e67;
+      --text-dark: #0f172a;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+      --shadow-soft: 0 12px 32px -8px rgba(20, 184, 166, 0.12);
+      --shadow-hover: 0 20px 40px -10px rgba(20, 184, 166, 0.22);
+      --radius-large: 28px;
+      --radius-pill: 9999px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Cairo', system-ui, -apple-system, sans-serif;
+      background-color: var(--bg-white);
+      color: var(--text-dark);
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+    h1, h2, h3, h4 { font-weight: 800; line-height: 1.3; color: var(--text-dark); }
+    p { color: var(--text-muted); font-weight: 600; }
 
-        /* زرار المساعدة – لون أزرق داكن مريح */
-        .help-btn {
-            position: fixed; top: 20px; left: 20px;
-            background: #1d3557; /* اللون الجديد */
-            color: white; width: 45px; height: 45px;
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            font-size: 24px; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            cursor: pointer; z-index: 1001; transition: background 0.3s; border: none;
-        }
-        .help-btn:hover { background: #14253d; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+    .section { padding: 96px 0; }
+    .section-mint {
+      background: linear-gradient(180deg, var(--bg-mint-light) 0%, var(--bg-white) 100%);
+      border-radius: 40px;
+      margin: 20px 0;
+    }
 
-        /* نافذة المساعدة */
-        .help-modal {
-            display: none; position: fixed; top: 80px; left: 20px;
-            background: white; border-radius: 15px; box-shadow: 0 8px 25px rgba(0,0,0,0.25);
-            width: 300px; z-index: 1000; text-align: right;
-            border-top: 4px solid #1d3557; padding: 25px 20px 20px 20px;
-        }
-        .help-modal h3 { color: #1d3557; margin-bottom: 15px; font-family: 'Segoe UI', Tahoma; }
-        .help-modal p { font-size: 0.9rem; color: #555; line-height: 1.8; font-family: 'Segoe UI', Tahoma; }
+    /* Header & Navigation */
+    .header {
+      padding: 20px 0;
+      position: sticky;
+      top: 0;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(10px);
+      z-index: 100;
+      border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+    }
+    .nav { display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+    .brand { display: flex; align-items: center; gap: 12px; font-size: 1.6rem; font-weight: 900; color: var(--teal-primary); text-decoration: none; }
+    .brand-icon {
+      width: 44px; height: 44px;
+      background: var(--teal-light);
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--teal-primary);
+    }
+    .nav-links { display: flex; gap: 32px; list-style: none; align-items: center; flex-wrap: wrap; }
+    .nav-links a { text-decoration: none; color: var(--text-dark); font-weight: 700; font-size: 1rem; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--teal-primary); }
 
-        /* زر الإغلاق ✕ خارج النافذة في الأعلى يمين */
-        .help-modal .close-btn {
-            position: absolute; top: -15px; right: -15px;
-            background: #fff; border: 2px solid #1d3557; color: #1d3557;
-            font-size: 18px; cursor: pointer; border-radius: 50%;
-            width: 34px; height: 34px; display: flex; align-items: center;
-            justify-content: center; transition: all 0.2s; line-height: 1;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-        }
-        .help-modal .close-btn:hover { background: #1d3557; color: #fff; }
+    /* Buttons */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+      padding: 14px 28px;
+      border-radius: var(--radius-pill);
+      font-size: 1rem; font-weight: 800;
+      text-decoration: none; border: none; cursor: pointer;
+      font-family: 'Cairo', sans-serif;
+      transition: all 0.25s ease;
+    }
+    .btn-teal {
+      background-color: var(--teal-primary); color: #ffffff;
+      box-shadow: 0 8px 20px rgba(20, 184, 166, 0.25);
+    }
+    .btn-teal:hover { background-color: var(--teal-dark); transform: translateY(-2px); box-shadow: 0 12px 24px rgba(20, 184, 166, 0.35); }
+    .btn-whatsapp { background-color: #25d366; color: #ffffff; font-size: 0.95rem; padding: 10px 20px; }
+    .btn-whatsapp:hover { background-color: #1eb956; transform: translateY(-2px); box-shadow: 0 8px 18px rgba(37, 211, 102, 0.3); }
 
-        /* شريط التواصل الاجتماعي السفلي */
-        .social-footer {
-            position: fixed; bottom: 0; left: 0; width: 100%;
-            background: white; border-top: 2px solid #0077b6;
-            display: flex; justify-content: center; align-items: center;
-            gap: 30px; padding: 12px 0; z-index: 999;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
-        }
-        .social-footer a {
-            text-decoration: none; font-size: 1.8rem;
-            transition: transform 0.2s; display: inline-block;
-        }
-        .social-footer a:hover { transform: scale(1.2); }
-    </style>
+    /* Hero Section */
+    .hero {
+      padding: 60px 0 100px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: center;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 8px 20px;
+      background: var(--teal-light); color: var(--teal-dark);
+      border-radius: var(--radius-pill);
+      font-weight: 800; font-size: 0.9rem;
+      margin-bottom: 24px;
+    }
+    .hero-title { font-size: 3.25rem; margin-bottom: 20px; }
+    .hero-title span { color: var(--teal-primary); }
+    .hero-text { font-size: 1.15rem; margin-bottom: 36px; max-width: 520px; }
+    .hero-actions { display: flex; gap: 16px; flex-wrap: wrap; }
+    .hero-visual {
+      position: relative;
+      background: linear-gradient(135deg, var(--teal-light) 0%, var(--bg-mint-soft) 100%);
+      border-radius: 36px;
+      padding: 40px;
+      display: flex; justify-content: center; align-items: center;
+      min-height: 440px;
+    }
+    .duotone-illustration { width: 280px; height: 280px; }
+
+    /* Floating Booking Widget */
+    .floating-widget {
+      position: fixed; bottom: 32px; left: 32px;
+      background: var(--bg-white);
+      padding: 16px 24px;
+      border-radius: var(--radius-pill);
+      box-shadow: 0 16px 32px rgba(15, 23, 42, 0.15);
+      display: flex; align-items: center; gap: 16px;
+      z-index: 999;
+      border: 2px solid var(--teal-light);
+      animation: float 3s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+    .widget-text { display: flex; flex-direction: column; }
+    .widget-title { font-size: 0.95rem; font-weight: 800; color: var(--text-dark); }
+    .widget-sub { font-size: 0.8rem; color: var(--teal-dark); font-weight: 700; }
+
+    /* Services Section */
+    .section-title { text-align: center; max-width: 600px; margin: 0 auto 64px; }
+    .section-title h2 { font-size: 2.5rem; margin-bottom: 12px; }
+    .services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
+    .service-card {
+      background: var(--bg-white);
+      border-radius: var(--radius-large);
+      padding: 40px 32px;
+      box-shadow: var(--shadow-soft);
+      border: 2px solid var(--bg-mint-light);
+      transition: all 0.3s ease;
+      display: flex; flex-direction: column; align-items: flex-start;
+    }
+    .service-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-hover); border-color: var(--teal-light); }
+    .service-icon-bg {
+      width: 64px; height: 64px;
+      border-radius: 20px;
+      background: var(--bg-mint-soft);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 24px;
+      color: var(--teal-primary);
+    }
+    .service-card h3 { font-size: 1.4rem; margin-bottom: 12px; }
+    .service-card p { font-size: 1rem; margin-bottom: 28px; flex-grow: 1; }
+    .service-actions { display: flex; gap: 12px; flex-wrap: wrap; width: 100%; }
+    .btn-book-mini {
+      flex: 1; text-align: center;
+      background: var(--teal-primary); color: #fff;
+      padding: 12px 20px; border-radius: var(--radius-pill);
+      font-weight: 800; font-size: 0.95rem; text-decoration: none;
+      transition: all 0.25s ease;
+    }
+    .btn-book-mini:hover { background: var(--teal-dark); transform: translateY(-2px); }
+
+    /* About Section */
+    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; }
+    .about-text h2 { font-size: 2.5rem; margin-bottom: 20px; }
+    .about-text p { font-size: 1.1rem; margin-bottom: 24px; }
+    .about-list { list-style: none; display: grid; gap: 16px; margin-bottom: 32px; }
+    .about-list li { display: flex; align-items: center; gap: 12px; font-weight: 700; color: var(--text-dark); }
+    .check-icon {
+      width: 32px; height: 32px; flex-shrink: 0;
+      background: var(--teal-light); color: var(--teal-primary);
+      border-radius: 50%;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-weight: 900;
+    }
+    .branch-pills { display: flex; gap: 12px; flex-wrap: wrap; }
+    .branch-pill {
+      background: var(--bg-mint-soft); color: var(--teal-dark);
+      border-radius: var(--radius-pill);
+      padding: 10px 20px; font-weight: 800; font-size: 0.95rem;
+    }
+
+    /* Testimonials */
+    .testimonial-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
+    .testimonial-card {
+      background: var(--bg-white);
+      padding: 32px;
+      border-radius: var(--radius-large);
+      box-shadow: var(--shadow-soft);
+      border: 1px solid var(--border-color);
+    }
+    .stars { color: #f59e0b; margin-bottom: 16px; font-size: 1.2rem; }
+    .testimonial-card p { font-size: 1rem; color: var(--text-dark); font-weight: 600; margin-bottom: 24px; }
+    .user-info { display: flex; align-items: center; gap: 12px; }
+    .avatar {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      background: var(--teal-light);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; color: var(--teal-dark);
+    }
+
+    /* Footer */
+    .footer {
+      background-color: var(--bg-mint-light);
+      border-top: 2px solid var(--teal-light);
+      padding: 80px 0 40px;
+      margin-top: 60px;
+      border-radius: 40px 40px 0 0;
+    }
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 48px;
+      margin-bottom: 60px;
+    }
+    .footer-brand p { margin-top: 16px; max-width: 300px; }
+    .footer-col h4 { font-size: 1.1rem; margin-bottom: 20px; color: var(--teal-dark); }
+    .footer-col ul { list-style: none; }
+    .footer-col li { margin-bottom: 12px; }
+    .footer-col a { text-decoration: none; color: var(--text-muted); font-weight: 700; transition: color 0.2s; }
+    .footer-col a:hover { color: var(--teal-primary); }
+    .footer-bottom { text-align: center; padding-top: 32px; border-top: 1px solid rgba(20, 184, 166, 0.15); font-size: 0.9rem; font-weight: 700; color: var(--text-muted); }
+
+    /* Responsive Design */
+    @media (max-width: 992px) {
+      .hero, .about-grid { grid-template-columns: 1fr; text-align: center; }
+      .hero-text, .about-text p { margin: 0 auto 36px; }
+      .hero-actions, .about-list, .branch-pills { justify-content: center; }
+      .services-grid, .testimonial-grid { grid-template-columns: 1fr; }
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+      .floating-widget { bottom: 16px; left: 16px; right: 16px; justify-content: space-between; }
+      .nav-links { gap: 16px; }
+    }
+    @media (max-width: 560px) {
+      .hero-title { font-size: 2.2rem; }
+      .section { padding: 56px 0; }
+      .footer-grid { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 <body>
-    <!-- خلفية الأسنان -->
-    <div class="bg-icons">
-        <span style="top:5%; left:5%;">🦷</span>
-        <span style="top:80%; left:10%;">🏥</span>
-        <span style="top:15%; left:80%;">🦷</span>
-        <span style="top:70%; left:85%;">✨</span>
-        <span style="top:50%; left:50%;">🦷</span>
-        <span style="top:30%; left:25%;">🏥</span>
-        <span style="top:85%; left:55%;">🦷</span>
-        <span style="top:10%; left:40%;">✨</span>
-    </div>
 
-    <!-- الترويسة -->
-    <div class="header">
-        <h1>🦷 {{ clinic.name }}</h1>
-        <div class="branches">
-            {% for branch in clinic.branch_list %}
-            <span>📍 {{ branch }}</span>
-            {% endfor %}
+  <header class="header">
+    <div class="container">
+      <nav class="nav">
+        <a href="/" class="brand">
+          <div class="brand-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5c-2 0-2.5 1.6-4.2 1.6C5.6 4.1 5 7 4.2 9.3c-.9 2.4.6 5.1 2 6.8.9 1.1 1.4 2.6 2.3 2.6.7 0 .8-2.1 1.9-2.6 1.4-.6 1.5 2.3 2.4 2.3.9 0 .9-2.6 1.9-3.4.9-.7 1.3-1.9 1.7-3.2.5-1.8.4-5.3-.6-6.9-1-1.6-1.3-.3-2.1-.3C15 4.1 14 2.5 12 2.5z"/></svg>
+          </div>
+          {{ clinic.name }}
+        </a>
+        <ul class="nav-links">
+          <li><a href="#services">الخدمات</a></li>
+          <li><a href="#about">عن العيادة</a></li>
+          <li><a href="#reviews">آراء المرضى</a></li>
+          <li><a href="#contact">التواصل</a></li>
+        </ul>
+        <a href="/book?type=consultation" class="btn btn-teal">احجز زيارتك ✦</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="container">
+    <div class="hero">
+      <div>
+        <span class="hero-badge">🦷 طب أسنان لطيف ومريح للعائلة</span>
+        <h1 class="hero-title">ابتسامة <span>صحية وسعيدة</span> لكل أفراد العائلة!</h1>
+        <p class="hero-text">أهلاً بكم في {{ clinic.name }} — عيادتنا مصممة لتقديم تجربة علاجية خالية من القلق وأسنان صحية ومشرقة للكبار والأطفال.</p>
+        <div class="hero-actions">
+          <a href="/book?type=consultation" class="btn btn-teal">احجز زيارتك الأولى</a>
+          <a href="https://wa.me/{{ clinic.whatsapp }}" target="_blank" rel="noopener" class="btn btn-whatsapp">
+            <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
+            تواصل سريع عبر واتساب
+          </a>
         </div>
+      </div>
+      <div class="hero-visual">
+        <svg class="duotone-illustration" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="100" cy="100" r="80" fill="#14B8A6" fill-opacity="0.15"/>
+          <path d="M60 90C60 67.9086 77.9086 50 100 50C122.091 50 140 67.9086 140 90V110C140 132.091 122.091 150 100 150C77.9086 150 60 132.091 60 110V90Z" fill="#14B8A6"/>
+          <circle cx="85" cy="85" r="8" fill="#FFFFFF"/>
+          <circle cx="115" cy="85" r="8" fill="#FFFFFF"/>
+          <path d="M80 115C85 125 115 125 120 115" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round"/>
+        </svg>
+      </div>
     </div>
+  </section>
 
-    <!-- بطاقات الخدمات -->
-    <div class="cards-container">
-        <a href="/book?type=consultation" class="card">
-            <div class="icon">🩺</div><h2>استشارة</h2><p>فحص وتشخيص أولي لحالتك</p>
-        </a>
-        <a href="/book?type=urgent" class="card">
-            <div class="icon">⏰</div><h2>حجز مستعجل</h2><p>ألم حاد أو حالة طارئة</p>
-        </a>
-        <a href="/book?type=surgery" class="card">
-            <div class="icon">🏥</div><h2>عملية</h2><p>خلع أو جراحة أسنان</p>
-        </a>
+  <section class="section section-mint" id="services">
+    <div class="container">
+      <div class="section-title">
+        <h2>خدماتنا</h2>
+        <p>علاجات متكاملة تُقدم بلمسة رفيقة وأعلى تقنيات الدقة الرقمية الحديثة.</p>
+      </div>
+      <div class="services-grid">
+        <div class="service-card">
+          <div class="service-icon-bg">
+            <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 21a9 9 0 100-18 9 9 0 000 18zM9 10h.01M15 10h.01M9.5 15a3.5 3.5 0 005 0"></path></svg>
+          </div>
+          <h3>استشارة</h3>
+          <p>فحص وتشخيص أولي لحالتك مع خطة علاج واضحة تناسبك وتناسب ميزانيتك.</p>
+          <div class="service-actions">
+            <a href="/book?type=consultation" class="btn-book-mini">احجز الآن</a>
+            <a href="https://wa.me/{{ clinic.whatsapp }}" target="_blank" rel="noopener" class="btn btn-whatsapp">واتساب</a>
+          </div>
+        </div>
+        <div class="service-card">
+          <div class="service-icon-bg">
+            <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
+          </div>
+          <h3>حجز مستعجل</h3>
+          <p>ألم حاد أو حالة طارئة؟ أولويتنا إنهاء الألم في أقرب وقت ممكن أو اليوم نفسه.</p>
+          <div class="service-actions">
+            <a href="/book?type=urgent" class="btn-book-mini">احجز الآن</a>
+            <a href="https://wa.me/{{ clinic.whatsapp }}" target="_blank" rel="noopener" class="btn btn-whatsapp">واتساب</a>
+          </div>
+        </div>
+        <div class="service-card">
+          <div class="service-icon-bg">
+            <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M4.8 9h14.4M4 15h16M10 3L8 21M16 3l-2 21"></path></svg>
+          </div>
+          <h3>عملية</h3>
+          <p>خلع وجراحات دقيقة بيد خبيرة وبيئة معقمة وتخدير آمن وتوجيه كامل بعد العملية.</p>
+          <div class="service-actions">
+            <a href="/book?type=surgery" class="btn-book-mini">احجز الآن</a>
+            <a href="https://wa.me/{{ clinic.whatsapp }}" target="_blank" rel="noopener" class="btn btn-whatsapp">واتساب</a>
+          </div>
+        </div>
+      </div>
     </div>
+  </section>
 
-    <!-- زرار المساعدة -->
-    <button class="help-btn" onclick="toggleHelp()">?</button>
-    <div class="help-modal" id="helpModal">
-        <button class="close-btn" onclick="toggleHelp()">✕</button>
-        <h3>كيف تستخدم الموقع؟</h3>
-        <p>
-            1. <strong>اختر نوع الخدمة.</strong><br>
-            2. <strong>املأ بياناتك.</strong><br>
-            3. <strong>سيتم حجز أقرب موعد تلقائياً (الأحد-الخميس).</strong><br>
-            4. <strong>يمكن للإدارة تعديل الموعد وسيتم إشعارك.</strong>
-        </p>
+  <section class="section container" id="about">
+    <div class="about-grid">
+      <div class="about-text">
+        <span class="hero-badge">💠 لماذا تختارنا؟</span>
+        <h2>رعاية تبدأ من الابتسامة</h2>
+        <p>في {{ clinic.name }} نؤمن أن زيارة طبيب الأسنان يمكن أن تكون تجربة مريحة. نجمع بين الخبرة الطبية والتقنيات الحديثة واللمسة الإنسانية.</p>
+        <ul class="about-list">
+          <li><span class="check-icon">✓</span> تعقيم كامل وأدوات معقيمة لكل مريض</li>
+          <li><span class="check-icon">✓</span> مواعيد مرنة وحجز إلكتروني سريع</li>
+          <li><span class="check-icon">✓</span> أسعار واضحة بدون مفاجآت</li>
+          <li><span class="check-icon">✓</span> تذكير تلقائي بالموعد قبل يومه</li>
+        </ul>
+        <div class="branch-pills">
+          {% for branch in clinic.branch_list %}
+          <span class="branch-pill">📍 {{ branch }}</span>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="hero-visual">
+        <svg class="duotone-illustration" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="100" cy="100" r="80" fill="#14B8A6" fill-opacity="0.12"/>
+          <rect x="60" y="65" width="52" height="70" rx="26" fill="#14B8A6" fill-opacity="0.25"/>
+          <rect x="88" y="65" width="52" height="70" rx="26" fill="#14B8A6"/>
+          <path d="M88 116c0-8 6-14 14-14s14 6 14 14" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round" fill="none"/>
+          <circle cx="96" cy="95" r="4" fill="#FFFFFF"/>
+          <circle cx="128" cy="95" r="4" fill="#FFFFFF"/>
+        </svg>
+      </div>
     </div>
+  </section>
 
-    <!-- شريط التواصل الاجتماعي -->
-    <div class="social-footer">
-        <a href="https://wa.me/{{ clinic.whatsapp }}" target="_blank" title="واتساب">💬</a>
-        <a href="{{ clinic.facebook }}" target="_blank" title="فيسبوك">📘</a>
-        <a href="{{ clinic.instagram }}" target="_blank" title="انستغرام">📷</a>
+  <section class="section container" id="reviews">
+    <div class="section-title">
+      <h2>مرضى واثقون فينا</h2>
+      <p>اقرأ ما يقوله عملاؤنا عن تجربتهم المريحة والخالية من القلق معنا.</p>
     </div>
+    <div class="testimonial-grid">
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <p>"أطفالي يتطلعون الآن لزيارة طبيب الأسنان بكل حماس! الفريق ودود للغاية، صبور ورفيق جداً مع الأطفال."</p>
+        <div class="user-info">
+          <div class="avatar">س.م</div>
+          <div>
+            <h4 style="font-size: 1rem;">سارة محمود</h4>
+            <span style="font-size: 0.85rem; color: var(--text-muted);">أم لطفلين</span>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <p>"تنظيف سريع وبدون أي ألم وأسعار واضحة ومحددة. أفضل عيادة جربتها دون منازع!"</p>
+        <div class="user-info">
+          <div class="avatar">أ.خ</div>
+          <div>
+            <h4 style="font-size: 1rem;">أحمد خالد</h4>
+            <span style="font-size: 0.85rem; color: var(--text-muted);">عميل منذ ٢٠٢٥</span>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <p>"حجزت مستعجل وأنهوا الألم في نفس اليوم. المواعيد بالتذكير التلقائي واصلة في وقتها على الإيميل."</p>
+        <div class="user-info">
+          <div class="avatar">م.ع</div>
+          <div>
+            <h4 style="font-size: 1rem;">منة عادل</h4>
+            <span style="font-size: 0.85rem; color: var(--text-muted);">حالة طارئة</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-    <script>
-        function toggleHelp() {
-            var modal = document.getElementById('helpModal');
-            modal.style.display = modal.style.display === 'block' ? 'none' : 'block';
-        }
-        window.onclick = function(event) {
-            var modal = document.getElementById('helpModal');
-            var btn = document.querySelector('.help-btn');
-            if (event.target !== modal && event.target !== btn && !modal.contains(event.target)) {
-                modal.style.display = 'none';
-            }
-        }
-    </script>
+  <div class="floating-widget">
+    <div class="widget-text">
+      <span class="widget-title">جاهز للزيارة؟</span>
+      <span class="widget-sub">⚡ مواعيد متاحة هذا الأسبوع</span>
+    </div>
+    <a href="/book?type=consultation" class="btn btn-teal" style="padding: 10px 18px; font-size: 0.85rem;">احجز الآن</a>
+  </div>
+
+  <footer class="footer" id="contact">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="/" class="brand">
+            <div class="brand-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5c-2 0-2.5 1.6-4.2 1.6C5.6 4.1 5 7 4.2 9.3c-.9 2.4.6 5.1 2 6.8.9 1.1 1.4 2.6 2.3 2.6.7 0 .8-2.1 1.9-2.6 1.4-.6 1.5 2.3 2.4 2.3.9 0 .9-2.6 1.9-3.4.9-.7 1.3-1.9 1.7-3.2.5-1.8.4-5.3-.6-6.9-1-1.6-1.3-.3-2.1-.3C15 4.1 14 2.5 12 2.5z"/></svg>
+            </div>
+            {{ clinic.name }}
+          </a>
+          <p>نرسم الابتسامات الصحية والسعيدة عبر طب أسنان حديث ومريح لجميع أفراد العائلة.</p>
+        </div>
+        <div class="footer-col">
+          <h4>خدماتنا</h4>
+          <ul>
+            <li><a href="/book?type=consultation">استشارة</a></li>
+            <li><a href="/book?type=urgent">حجز مستعجل</a></li>
+            <li><a href="/book?type=surgery">عملية</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>أوقات العمل</h4>
+          <ul>
+            <li>الأحد - الخميس: ٩ ص – ٥ م</li>
+            <li>الجمعة والسبت: مغلق</li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>العنوان والتواصل</h4>
+          <ul>
+            {% for branch in clinic.branch_list %}
+            <li>🏥 {{ branch }}</li>
+            {% endfor %}
+            <li>💬 <a href="https://wa.me/{{ clinic.whatsapp }}" target="_blank" rel="noopener">واتساب المباشر</a></li>
+            {% if clinic.facebook %}<li><a href="{{ clinic.facebook }}" target="_blank" rel="noopener">📘 فيسبوك</a></li>{% endif %}
+            {% if clinic.instagram %}<li><a href="{{ clinic.instagram }}" target="_blank" rel="noopener">📷 انستغرام</a></li>{% endif %}
+            {% if clinic.clinic_email %}<li>✉️ {{ clinic.clinic_email }}</li>{% endif %}
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; ٢٠٢٦ {{ clinic.name }} لطب الأسنان. مصممة لابتسامات عائلية سعيدة.</p>
+      </div>
+    </div>
+  </footer>
+
 </body>
 </html>
