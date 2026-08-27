@@ -397,10 +397,10 @@ def send_daily_reminders():
 
 def start_scheduler():
     from apscheduler.schedulers.background import BackgroundScheduler
-    scheduler = BackgroundScheduler(daemon=True)
+    scheduler = BackgroundScheduler(daemon=True, timezone='Africa/Cairo')
     scheduler.add_job(send_daily_reminders, 'cron', hour=9, minute=0, id='daily_reminders')
     scheduler.start()
-    print('[scheduler] بدأ المجدول اليومي (تذكير 9:00 صباحاً)')
+    print('[scheduler] بدأ المجدول اليومي (تذكير 9:00 صباحاً بتوقيت القاهرة)')
 
 if not app.debug or os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
     try:
