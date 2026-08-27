@@ -67,6 +67,8 @@
             <input type="password" name="smtp_password" value="{{ settings.get('smtp_password','') }}" placeholder="16 حرفاً لجوجل">
             <details style="margin-top:8px;">
                 <summary style="cursor:pointer;color:#0077b6;">⚙️ مزود بريد بديل (اختياري — سيبه فاضي لو بتستخدم Gmail)</summary>
+                <label>اسم دخول SMTP (لو مختلف عن بريد المرسل):</label>
+                <input type="text" name="smtp_login" class="ltr" value="{{ settings.get('smtp_login','') }}" placeholder="مثال: b6dfda001@smtp-brevo.com">
                 <label>سيرفر SMTP:</label>
                 <input type="text" name="smtp_host" class="ltr" value="{{ settings.get('smtp_host','') }}" placeholder="smtp.gmail.com">
                 <label>البورت:</label>

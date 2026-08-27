@@ -272,7 +272,7 @@ def admin_settings():
         return redirect('/admin/login')
     msg = ''
     if request.method == 'POST':
-        profile_keys = list(CLINIC_DEFAULTS.keys()) + ['smtp_email', 'smtp_password',
+        profile_keys = list(CLINIC_DEFAULTS.keys()) + ['smtp_email', 'smtp_login', 'smtp_password',
                                                        'smtp_host', 'smtp_port', 'smtp_secure']
         conn = db.connect()
         c = conn.cursor()
@@ -280,7 +280,7 @@ def admin_settings():
             val = request.form.get(key)
             if val is not None and val.strip() != '':
                 db.set_setting(c, key, val.strip())
-            elif key in ('smtp_email', 'smtp_password', 'smtp_host', 'smtp_port', 'smtp_secure') and val is not None:
+            elif key in ('smtp_email', 'smtp_login', 'smtp_password', 'smtp_host', 'smtp_port', 'smtp_secure') and val is not None:
                 db.set_setting(c, key, '')
         conn.commit()
         conn.close()

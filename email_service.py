@@ -71,7 +71,8 @@ def send_email(to_email, subject, html_body, attachment_path=None):
 
     try:
         server = smtp_connection(settings)
-        server.login(smtp_email, smtp_password)
+        login_user = settings.get('smtp_login') or smtp_email
+        server.login(login_user, smtp_password)
         server.sendmail(smtp_email, [to_email], msg.as_string())
         server.quit()
         return True, 'تم الإرسال بنجاح'
