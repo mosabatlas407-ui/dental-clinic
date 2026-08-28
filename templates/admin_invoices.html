@@ -1,50 +1,38 @@
-﻿<!DOCTYPE html>
-<html dir="rtl" lang="ar">
-<head>
-    <meta charset="UTF-8"><title>الفواتير</title>
-    <style>
-        body { font-family: 'Segoe UI'; background: #f0f4f8; padding: 20px; }
-        h2 { color: #0077b6; text-align: center; }
-        table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        th, td { padding: 12px; border-bottom: 1px solid #ddd; text-align: center; }
-        th { background: #e76f51; color: white; }
-        .actions a { margin: 0 5px; color: white; padding: 5px 10px; border-radius: 5px; text-decoration: none; font-size: 0.9rem; display: inline-block; }
-        .view { background: #0077b6; }
-        .paid { background: #2a9d8f; color: white; padding: 4px 10px; border-radius: 12px; font-size: 0.85rem; }
-        .unpaid { background: #e63946; color: white; padding: 4px 10px; border-radius: 12px; font-size: 0.85rem; }
-        .nav { display: flex; justify-content: center; gap: 15px; margin: 15px 0; }
-        .nav a { background: #0077b6; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; }
-    </style>
-</head>
-<body>
-    <div class="nav">
-        <a href="/admin/dashboard">📅 المواعيد</a>
-        <a href="/admin/invoices">🧾 الفواتير</a>
-        <a href="/admin/prices">💰 الأسعار</a>
-        <a href="/admin/settings">⚙️ الإعدادات</a>
-    </div>
-    <h2>🧾 جميع الفواتير</h2>
-    {% if invoices %}
-    <table>
-        <tr><th>رقم الفاتورة</th><th>المريض</th><th>تاريخ الإصدار</th><th>تاريخ الزيارة</th><th>الإجمالي (ج.م)</th><th>الحالة</th><th>إجراءات</th></tr>
-        {% for inv in invoices %}
-        <tr>
-            <td>#{{ inv[0] }}</td>
-            <td>{{ inv[1] }}</td>
-            <td>{{ inv[2] }}</td>
-            <td>{{ inv[5] or '—' }}</td>
-            <td><strong>{{ inv[3] }}</strong></td>
-            <td>{% if inv[4] == 'مدفوعة' %}<span class="paid">مدفوعة</span>{% else %}<span class="unpaid">غير مدفوعة</span>{% endif %}</td>
-            <td class="actions">
-                <a href="/admin/invoices/{{ inv[0] }}" class="view">عرض</a>
-                <a href="/admin/invoices/{{ inv[0] }}/pdf" class="view">PDF</a>
-            </td>
-        </tr>
-        {% endfor %}
-    </table>
-    {% else %}
-        <p style="text-align:center;">لا توجد فواتير بعد.<br>اضغط "إكمال" على أي موعد في لوحة التحكم لإنشاء فاتورة تلقائياً.</p>
-    {% endif %}
-    <p style="text-align:center; margin-top:20px;"><a href="/admin/dashboard">العودة للوحة التحكم</a></p>
-</body>
-</html>
+﻿{% extends "admin_base.html" %}
+{% block title %}الفواتير - {{ clinic.name }}{% endblock %}
+{% block content %}
+<h1 class="page-title">🧾 جميع الفواتير</h1>
+<p class="page-sub">جرد فواتير المرضى وحالة الدفع لكل منها</p>
+
+{% if invoices %}
+<div class="table-wrap">
+  <table>
+    <tr><th>رقم الفاتورة</th><th>المريض</th><th>تاريخ الإصدار</th><th>تاريخ الزيارة</th><th>الإجمالي (ج.م)</th><th>الحالة</th><th>إجراءات</th></tr>
+    {% for inv in invoices %}
+    <tr>
+      <td>#{{ inv[0] }}</td>
+      <td>{{ inv[1] }}</td>
+      <td>{{ inv[2] }}</td>
+      <td>{{ inv[5] or '—' }}</td>
+      <td><strong>{{ inv[3] }}</strong></td>
+      <td>
+        {% if inv[4] == 'مدفوعة' %}
+          <span class="badge badge-paid">مدفوعة ✅</span>
+        {% else %}
+          <span class="badge badge-unpaid">غير مدفوعة</span>
+        {% endif %}
+      </td>
+      <td class="actions">
+        <a href="/admin/invoices/{{ inv[0] }}" class="a-view">عرض</a>
+        <a href="/admin/invoices/{{ inv[0] }}/pdf" class="a-remind">PDF</a>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% else %}
+  <div class="card" style="max-width:440px; text-align:center;">
+    <p style="color: var(--text-muted); font-weight: 700;">لا توجد فواتير بعد.<br><br>اضغط "إكمال" على أي موعد في لوحة التحكم لإنشاء فاتورة تلقائياً.</p>
+  </div>
+{% endif %}
+{% endblock %}

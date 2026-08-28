@@ -357,7 +357,7 @@ def admin_settings_test():
     if not test_email:
         return redirect('/admin/settings')
     ok, msg = send_email(test_email, f'🔧 بريد تجريبي - {get_clinic_name()}',
-                         '<html dir="rtl"><body style="font-family:Segoe UI;"><h3>✅ تم إرسال هذا البريد التجريبي بنجاح</h3><p>إعدادات البريد تعمل بشكل صحيح.</p></body></html>')
+                         '<html dir="rtl" lang="ar"><head><meta charset="UTF-8"><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700;800&display=swap" rel="stylesheet"><style>body{font-family:\'Cairo\',sans-serif;background:linear-gradient(160deg,#f0fdf4,#ffffff);display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;}h3{color:#0d9488;}p{color:#64748b;font-weight:600;}</style></head><body><div style="background:#fff;border:2px solid #f0fdf4;border-radius:28px;box-shadow:0 20px 50px -12px rgba(20,184,166,.18);padding:40px;text-align:center;"><h3>✅ تم إرسال هذا البريد التجريبي بنجاح</h3><p>إعدادات البريد تعمل بشكل صحيح.</p></div></body></html>')
     return render_template('admin_settings.html', settings=get_settings(),
                            msg=f'📧 بريد تجريبي: {"✅ " + msg if ok else "❌ " + msg}')
 
@@ -646,11 +646,17 @@ def admin_invoice_pdf(invoice_id):
     if not pdf_path:
         return "تعذر إنشاء PDF", 500
     return f'''
-    <html dir="rtl"><body style="font-family:Segoe UI; text-align:center; padding:40px;">
-    <h2 style="color:#0077b6;">✅ تم إنشاء ملف الفاتورة بنجاح</h2>
+    <html dir="rtl" lang="ar"><head><meta charset="UTF-8"><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {{ font-family: 'Cairo', sans-serif; background: linear-gradient(160deg,#f0fdf4,#ffffff); display:flex; align-items:center; justify-content:center; min-height:100vh; margin:0; padding:20px; }}
+        .card {{ background:#fff; border:2px solid #f0fdf4; border-radius:28px; box-shadow:0 20px 50px -12px rgba(20,184,166,.18); padding:40px; text-align:center; max-width:420px; }}
+        h2 {{ color:#0d9488; margin:0 0 10px; }}
+        p {{ color:#64748b; font-weight:600; }}
+        a {{ display:inline-block; margin-top:18px; padding:12px 26px; background:#14b8a6; color:#fff; text-decoration:none; border-radius:9999px; font-weight:800; }}
+    </style></head>
+    <body><div class="card"><h2>✅ تم إنشاء ملف الفاتورة بنجاح</h2>
     <p>الملف: {pdf_path}</p>
-    <a href="/admin/invoices/{invoice_id}" style="color:#0077b6;">العودة للفاتورة</a>
-    </body></html>
+    <a href="/admin/invoices/{invoice_id}">العودة للفاتورة</a></div></body></html>
     '''
 
 # ====================== PDF Generation ======================
@@ -738,11 +744,17 @@ def admin_pdf():
     pdf.output(filename)
 
     return f'''
-    <html dir="rtl"><body style="font-family:Segoe UI; text-align:center; padding:40px;">
-    <h2 style="color:#0077b6;">✅ تم إنشاء ملف PDF بنجاح</h2>
+    <html dir="rtl" lang="ar"><head><meta charset="UTF-8"><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {{ font-family: 'Cairo', sans-serif; background: linear-gradient(160deg,#f0fdf4,#ffffff); display:flex; align-items:center; justify-content:center; min-height:100vh; margin:0; padding:20px; }}
+        .card {{ background:#fff; border:2px solid #f0fdf4; border-radius:28px; box-shadow:0 20px 50px -12px rgba(20,184,166,.18); padding:40px; text-align:center; max-width:420px; }}
+        h2 {{ color:#0d9488; margin:0 0 10px; }}
+        p {{ color:#64748b; font-weight:600; }}
+        a {{ display:inline-block; margin-top:18px; padding:12px 26px; background:#14b8a6; color:#fff; text-decoration:none; border-radius:9999px; font-weight:800; }}
+    </style></head>
+    <body><div class="card"><h2>✅ تم إنشاء ملف PDF بنجاح</h2>
     <p>الملف: {filename}</p>
-    <a href="/admin/dashboard" style="color:#0077b6;">العودة للوحة التحكم</a>
-    </body></html>
+    <a href="/admin/dashboard">العودة للوحة التحكم</a></div></body></html>
     '''
 
 if __name__ == '__main__':

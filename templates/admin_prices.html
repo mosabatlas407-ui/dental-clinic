@@ -1,53 +1,41 @@
-﻿<!DOCTYPE html>
-<html dir="rtl" lang="ar">
-<head>
-    <meta charset="UTF-8"><title>إعدادات الأسعار</title>
-    <style>
-        body { font-family: 'Segoe UI'; background: #f0f4f8; padding: 20px; }
-        h2 { color: #0077b6; text-align: center; }
-        .card { max-width: 500px; margin: 20px auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        .price-row { display: flex; align-items: center; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid #eee; }
-        .price-row:last-child { border-bottom: none; }
-        .price-row .icon { font-size: 1.8rem; margin-left: 10px; }
-        .price-row label { font-weight: 600; color: #333; }
-        .price-row .sub { color: #777; font-size: 0.8rem; }
-        .price-row input { width: 140px; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1rem; text-align: center; }
-        .price-row input:focus { border-color: #0077b6; outline: none; }
-        button { width: 100%; padding: 12px; background: #0077b6; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; margin-top: 20px; cursor: pointer; }
-        button:hover { background: #005f8a; }
-        .msg { text-align: center; padding: 12px; border-radius: 8px; margin: 15px auto; max-width: 500px; font-weight: bold; background: #e8f6ff; color: #0077b6; }
-        .nav { display: flex; justify-content: center; gap: 15px; margin: 15px 0; flex-wrap: wrap; }
-        .nav a { background: #0077b6; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; }
-        .hint { font-size: 0.85rem; color: #777; text-align: center; margin-top: 15px; line-height: 1.7; }
-    </style>
-</head>
-<body>
-    {% if msg %}<div class="msg">{{ msg }}</div>{% endif %}
-    <div class="nav">
-        <a href="/admin/dashboard">📅 المواعيد</a>
-        <a href="/admin/invoices">🧾 الفواتير</a>
-        <a href="/admin/prices">💰 الأسعار</a>
-        <a href="/admin/settings">⚙️ الإعدادات</a>
+﻿{% extends "admin_base.html" %}
+{% block title %}أسعار الخدمات - {{ clinic.name }}{% endblock %}
+{% block content %}
+<h1 class="page-title">💰 أسعار الخدمات</h1>
+<p class="page-sub">تُستخدم كسعر افتراضي تلقائياً عند إنشاء فاتورة جديدة، ويمكن تعديلها داخل كل فاتورة</p>
+
+{% if msg %}<div class="msg">{{ msg }}</div>{% endif %}
+
+<div class="card card-narrow">
+  <form action="/admin/prices" method="post">
+    <div class="price-row" style="display:flex; align-items:center; justify-content:space-between; padding:16px 0; border-bottom:1px solid var(--border-color); gap:16px; flex-wrap:wrap;">
+      <span>
+        <span style="font-size:1.8rem; margin-left:10px;">🩺</span>
+        <label style="display:inline; margin:0; font-weight:800;">استشارة</label>
+        <br>
+        <span class="hint" style="margin:0;">فحص وتشخيص أولي</span>
+      </span>
+      <input type="number" name="price_consultation" min="0" step="1" value="{{ prices['consultation'] }}" style="width:140px; text-align:center;">
     </div>
-    <h2>💰 أسعار الخدمات</h2>
-    <div class="card">
-        <form action="/admin/prices" method="post">
-            <div class="price-row">
-                <span><span class="icon">🩺</span><label>استشارة</label><br><span class="sub">فحص وتشخيص أولي</span></span>
-                <input type="number" name="price_consultation" min="0" step="1" value="{{ prices['consultation'] }}">
-            </div>
-            <div class="price-row">
-                <span><span class="icon">⏰</span><label>حجز مستعجل</label><br><span class="sub">حالة طارئة</span></span>
-                <input type="number" name="price_urgent" min="0" step="1" value="{{ prices['urgent'] }}">
-            </div>
-            <div class="price-row">
-                <span><span class="icon">🏥</span><label>عملية</label><br><span class="sub">خلع أو جراحة</span></span>
-                <input type="number" name="price_surgery" min="0" step="1" value="{{ prices['surgery'] }}">
-            </div>
-            <button type="submit">💾 حفظ الأسعار</button>
-        </form>
-        <div class="hint">الأسعار هنا تُستخدم كسعر افتراضي تلقائياً عند إنشاء فاتورة جديدة، ويمكن تعديلها داخل كل فاتورة.</div>
+    <div class="price-row" style="display:flex; align-items:center; justify-content:space-between; padding:16px 0; border-bottom:1px solid var(--border-color); gap:16px; flex-wrap:wrap;">
+      <span>
+        <span style="font-size:1.8rem; margin-left:10px;">⚡</span>
+        <label style="display:inline; margin:0; font-weight:800;">حجز مستعجل</label>
+        <br>
+        <span class="hint" style="margin:0;">حالة طارئة</span>
+      </span>
+      <input type="number" name="price_urgent" min="0" step="1" value="{{ prices['urgent'] }}" style="width:140px; text-align:center;">
     </div>
-    <p style="text-align:center;"><a href="/admin/dashboard">العودة للوحة التحكم</a></p>
-</body>
-</html>
+    <div class="price-row" style="display:flex; align-items:center; justify-content:space-between; padding:16px 0; gap:16px; flex-wrap:wrap;">
+      <span>
+        <span style="font-size:1.8rem; margin-left:10px;">🏥</span>
+        <label style="display:inline; margin:0; font-weight:800;">عملية</label>
+        <br>
+        <span class="hint" style="margin:0;">خلع أو جراحة</span>
+      </span>
+      <input type="number" name="price_surgery" min="0" step="1" value="{{ prices['surgery'] }}" style="width:140px; text-align:center;">
+    </div>
+    <button type="submit" class="btn" style="margin-top:24px;">💾 حفظ الأسعار</button>
+  </form>
+</div>
+{% endblock %}

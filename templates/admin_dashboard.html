@@ -1,61 +1,42 @@
-﻿<!DOCTYPE html>
-<html dir="rtl" lang="ar">
-<head>
-    <meta charset="UTF-8"><title>لوحة تحكم الإدارة</title>
-    <style>
-        body { font-family: 'Segoe UI'; background: #f0f4f8; padding: 20px; }
-        h2 { color: #0077b6; text-align: center; }
-        table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        th, td { padding: 12px; border-bottom: 1px solid #ddd; text-align: center; }
-        th { background: #0077b6; color: white; }
-        .actions a { margin: 0 5px; color: white; padding: 5px 10px; border-radius: 5px; text-decoration: none; font-size: 0.9rem; display: inline-block; }
-        .cancel { background: #e63946; }
-        .edit { background: #f4a261; }
-        .complete { background: #2a9d8f; }
-        .remind { background: #3a86ff; }
-        .logout { text-align: left; margin-bottom: 10px; }
-        .nav { display: flex; justify-content: center; gap: 15px; margin: 15px 0; flex-wrap: wrap; }
-        .nav a { background: #0077b6; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; }
-        .nav a:hover { background: #005f8a; }
-        .email-col { font-size: 0.85rem; color: #555; direction: ltr; }
-    </style>
-</head>
-<body>
-    <div class="logout"><a href="/admin/logout" style="color:red;">تسجيل الخروج</a></div>
-    <h2>📋 جميع المواعيد القادمة</h2>
-    <div class="nav">
-        <a href="/admin/dashboard">📅 المواعيد</a>
-        <a href="/admin/invoices">🧾 الفواتير</a>
-        <a href="/admin/prices">💰 الأسعار</a>
-        <a href="/admin/settings">⚙️ الإعدادات</a>
-        <a href="/admin/pdf">📄 طباعة PDF الأسبوعي</a>
-    </div>
-    {% if appointments %}
-    <table>
-        <tr>
-            <th>التاريخ</th><th>الوقت</th><th>الاسم</th><th>نوع الحجز</th><th>تشخيص الحالة</th><th>البريد</th><th>الحالة</th><th>إجراءات</th>
-        </tr>
-        {% for appt in appointments %}
-        <tr>
-            <td>{{ appt[3] }}</td>
-            <td>{{ appt[4] }}</td>
-            <td>{{ appt[1] }}</td>
-            <td>{{ appt[2] }}</td>
-            <td>{{ appt[5] }}</td>
-            <td class="email-col">{{ appt[7] }}</td>
-            <td>{{ appt[6] }}</td>
-            <td class="actions">
-                <a href="/admin/complete/{{ appt[0] }}" class="complete" onclick="return confirm('إكمال الموعد وإنشاء فاتورة تلقائياً؟')">إكمال</a>
-                <a href="/admin/remind/{{ appt[0] }}" class="remind" title="إرسال تذكير بالإيميل">تذكير</a>
-                <a href="/admin/edit/{{ appt[0] }}" class="edit">تعديل</a>
-                <a href="/admin/cancel/{{ appt[0] }}" class="cancel" onclick="return confirm('هل أنت متأكد من الإلغاء؟')">إلغاء</a>
-            </td>
-        </tr>
-        {% endfor %}
-    </table>
-    {% else %}
-        <p style="text-align:center;">لا توجد مواعيد حالياً.</p>
-    {% endif %}
-    <p style="text-align:center; margin-top:20px;"><a href="/">العودة للموقع الرئيسي</a></p>
-</body>
-</html>
+﻿{% extends "admin_base.html" %}
+{% block title %}لوحة تحكم الإدارة - {{ clinic.name }}{% endblock %}
+{% block content %}
+<h1 class="page-title">📋 جميع المواعيد القادمة</h1>
+<p class="page-sub">تابع الحجوزات وأرسل التذكيرات وقم بالإجراءات من هنا</p>
+
+{% if appointments %}
+<div class="table-wrap">
+  <table>
+    <tr>
+      <th>التاريخ</th><th>الوقت</th><th>الاسم</th><th>نوع الحجز</th><th>تشخيص الحالة</th><th>البريد</th><th>الحالة</th><th>إجراءات</th>
+    </tr>
+    {% for appt in appointments %}
+    <tr>
+      <td>{{ appt[3] }}</td>
+      <td>{{ appt[4] }}</td>
+      <td>{{ appt[1] }}</td>
+      <td>
+        <span class="badge {{ 'badge-paid' if 'استشارة' in appt[2] else 'badge-unpaid' if 'مستعجل' in appt[2] else 'badge-paid' }}">
+          {{ appt[2] }}
+        </span>
+      </td>
+      <td>{{ appt[5] }}</td>
+      <td class="email-col">{{ appt[7] }}</td>
+      <td>{{ appt[6] }}</td>
+      <td class="actions">
+        <a href="/admin/complete/{{ appt[0] }}" class="a-complete" onclick="return confirm('إكمال الموعد وإنشاء فاتورة تلقائياً؟')">إكمال</a>
+        <a href="/admin/remind/{{ appt[0] }}" class="a-remind" title="إرسال تذكير بالإيميل">تذكير</a>
+        <a href="/admin/edit/{{ appt[0] }}" class="a-edit">تعديل</a>
+        <a href="/admin/cancel/{{ appt[0] }}" class="a-cancel" onclick="return confirm('هل أنت متأكد من الإلغاء؟')">إلغاء</a>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% else %}
+  <div class="card card-narrow" style="text-align:center; max-width:420px;">
+    <p style="color: var(--text-muted); font-weight: 700;">📭 لا توجد مواعيد حالياً.<br><br>عندما يحجز مريض من الموقع، سيظهر موعده هنا مباشرة.</p>
+  </div>
+{% endif %}
+<a href="/" class="back-link">← العودة للموقع الرئيسي</a>
+{% endblock %}
