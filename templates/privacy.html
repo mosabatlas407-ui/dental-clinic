@@ -1,0 +1,167 @@
+{% extends "base_frontend.html" %}
+
+{% set seo_title = "سياسة الخصوصية | {{ clinic.name }}" %}
+{% set seo_description = "سياسة خصوصية {{ clinic.name }} - كيفية جمع واستخدام وحماية بيانات المرضى الشخصية والطبية وفقاً لقوانين حماية البيانات." %}
+{% set seo_keywords = "سياسة الخصوصية، حماية البيانات، بيانات المرضى، {{ clinic.name }}" %}
+{% set canonical_url = url_for('privacy', _external=True) %}
+{% set og_image = url_for('static', filename='images/og-default.svg', _external=True) %}
+
+{% block styles %}
+<style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Cairo', system-ui, sans-serif; background: linear-gradient(135deg, var(--mint-bg), var(--white)); color: var(--text-dark); line-height: 1.8; }
+    .container { max-width: 800px; margin: 0 auto; padding: 40px 20px; }
+    .legal-header { text-align: center; margin-bottom: 40px; padding-bottom: 20px; border-bottom: 2px solid var(--mint-light); }
+    .legal-header h1 { color: var(--mint-title); font-size: 2.5rem; margin-bottom: 10px; }
+    .legal-header p { color: var(--text-muted); font-size: 1.1rem; }
+    .legal-content { background: var(--white); border-radius: 16px; padding: 40px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
+    .legal-content h2 { color: var(--mint-title); font-size: 1.5rem; margin: 30px 0 15px; padding-bottom: 10px; border-bottom: 1px solid var(--mint-light); }
+    .legal-content h3 { color: var(--mint-primary); font-size: 1.2rem; margin: 20px 0 10px; }
+    .legal-content p { margin-bottom: 15px; color: var(--text-dark); }
+    .legal-content ul { margin: 15px 0 15px 30px; }
+    .legal-content li { margin-bottom: 8px; color: var(--text-dark); }
+    .legal-content .highlight { background: var(--mint-bg); padding: 15px; border-radius: 10px; border-right: 4px solid var(--mint-primary); margin: 20px 0; }
+    .last-updated { text-align: center; color: var(--text-muted); font-size: 0.9rem; margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--mint-light); }
+    .back-link { display: inline-block; margin-top: 30px; padding: 12px 24px; background: var(--mint-primary); color: var(--white); text-decoration: none; border-radius: 10px; font-weight: 700; }
+    .back-link:hover { background: var(--mint-dark); }
+
+    .site-header { background: linear-gradient(90deg, var(--mint-dark), var(--mint-primary)); color: var(--white); padding: 20px; text-align: center; }
+    .site-header h1 a { color: var(--white); text-decoration: none; }
+    .site-header .branches span { background: rgba(255,255,255,.2); padding: 4px 14px; border-radius: 20px; margin: 4px; display: inline-block; }
+    .main-nav { background: var(--white); border-bottom: 3px solid var(--mint-primary); display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; padding: 12px; }
+    .main-nav a { text-decoration: none; color: var(--mint-title); font-weight: 700; padding: 8px 16px; border-radius: 25px; }
+    .main-nav a:hover { background: var(--mint-light); }
+    .main-nav a.active { background: var(--mint-primary); color: var(--white); }
+    .site-footer { background: var(--white); border-top: 2px solid var(--mint-primary); text-align: center; padding: 16px 14px; color: var(--text-muted); }
+    .site-footer nav { display: flex; justify-content: center; gap: 16px; margin-bottom: 8px; flex-wrap: wrap; }
+    .site-footer nav a { color: var(--mint-title); text-decoration: none; font-weight: 700; }
+    .social-footer { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--white); border-top: 2px solid var(--mint-primary); display: flex; justify-content: center; gap: 30px; padding: 10px 0; font-size: 1.7rem; }
+    body { padding-bottom: 70px; }
+    @media (max-width: 768px) { .container { padding: 24px 12px; } .legal-content { padding: 24px 16px; } .main-nav a { font-size: .85rem; padding: 6px 10px; } .legal-header h1 { font-size: 1.8rem; } }
+
+    /* Skip Link */
+    .skip-link { position: absolute; top: -40px; left: 0; background: var(--mint-primary); color: var(--white); padding: 8px 16px; z-index: 10000; text-decoration: none; font-weight: 600; border-radius: 0 0 8px 0; }
+    .skip-link:focus { top: 0; }
+
+    /* Focus States */
+    a:focus { outline: 3px solid var(--mint-primary); outline-offset: 2px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<header class="site-header"><h1><a href="/"><i class="fa-solid fa-tooth"></i> {{ clinic.name }}</a></h1><div class="branches">{% for b in clinic.branch_list %}<span><i class="fa-solid fa-location-dot"></i> {{ b }}</span>{% endfor %}</div></header>
+<nav class="main-nav"><a href="/">الرئيسية</a><a href="/book">احجز موعد</a><a href="/about">عن العيادة</a><a href="/terms">شروط الاستخدام</a><a href="/privacy" class="active">سياسة الخصوصية</a></nav>
+<main id="main-content" role="main">
+    <div class="container">
+        <header class="legal-header">
+            <h1><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> سياسة الخصوصية</h1>
+            <p>{{ clinic.name }} - التزامنا بحماية بياناتك</p>
+        </header>
+
+        <article class="legal-content">
+            <section>
+                <h2>1. مقدمة</h2>
+                <p>نحن في <strong>{{ clinic.name }}</strong> نلتزم بحماية خصوصية مرضانا وزوار موقعنا الإلكتروني. توضح هذه السياسة كيفية جمعنا واستخدامنا وحمايتنا لمعلوماتك الشخصية والطبية عند استخدامك لخدماتنا.</p>
+            </section>
+
+            <section>
+                <h2>2. البيانات التي نجمعها</h2>
+                <h3>أ. بيانات الحجز</h3>
+                <ul>
+                    <li>الاسم الكامل</li>
+                    <li>العمر والجنس</li>
+                    <li>معلومات التواصل (البريد الإلكتروني، رقم الواتساب)</li>
+                    <li>وصف الحالة الطبية (التشخيص الأولي)</li>
+                    <li>نوع الخدمة المطلوبة</li>
+                </ul>
+                <h3>ب. بيانات الاستخدام</h3>
+                <ul>
+                    <li>عنوان IP ونوع المتصفح</li>
+                    <li>الصفحات التي تمت زيارتها وأوقات الزيارة</li>
+                    <li>مصدر الزيارة (محركات البحث، روابط مباشرة، إلخ)</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>3. كيفية استخدام البيانات</h2>
+                <ul>
+                    <li>حجز وإدارة المواعيد الطبية</li>
+                    <li>إرسال تأكيدات المواعيد والتذكيرات عبر البريد الإلكتروني</li>
+                    <li>إصدار الفواتير والتقارير الطبية</li>
+                    <li>التواصل مع المريض عند الضرورة</li>
+                    <li>تحسين خدمات الموقع وتجربة المستخدم</li>
+                    <li>الامتثال للمتطلبات القانونية والتنظيمية</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>4. حماية البيانات الطبية (PHI)</h2>
+                <div class="highlight">
+                    <p><strong>ملاحظة هامة:</strong> نتعامل مع البيانات الطبية بسرية تامة ووفقاً لأعلى معايير الحماية. التشخيص الطبي والتاريخ المرضي يتم تشفيرهما في قاعدة البيانات ولا يتم مشاركتهما مع أي طرف ثالث دون موافقة صريحة من المريض أو أمر قضائي.</p>
+                </div>
+                <ul>
+                    <li>تشفير الحقول الحساسة في قاعدة البيانات</li>
+                    <li>عدم تسجيل البيانات الطبية في سجلات النظام (logs)</li>
+                    <li>تقييد الوصول للبيانات الطبية للكوادر الطبية المصرح لها فقط</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>5. مشاركة البيانات</h2>
+                <p>لا نبيع أو نؤجر أو نتبادل بياناتك الشخصية مع أطراف ثالثة لأغراض تسويقية. قد نشارك البيانات فقط في الحالات التالية:</p>
+                <ul>
+                    <li>مع مزودي خدمات البريد الإلكتروني لإرسال التأكيدات والتذكيرات (بموجب اتفاقيات معالجة بيانات)</li>
+                    <li>عند وجود التزام قانوني أو أمر قضائي</li>
+                    <li>لحماية الحقوق والممتلكات والسلامة</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>6. حقوق المريض</h2>
+                <p>لك الحق في:</p>
+                <ul>
+                    <li>الوصول إلى بياناتك الشخصية وتصحيحها</li>
+                    <li>طلب حذف بياناتك (مع مراعاة المتطلبات القانونية للاحتفاظ بالسجلات الطبية)</li>
+                    <li>اعتراض على معالجة بياناتك لأغراض التسويق</li>
+                    <li>طلب نسخة من بياناتك بصيغة قابلة للقراءة آلياً</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>7. الاحتفاظ بالبيانات</h2>
+                <p>نحتفظ بالبيانات الطبية وفقاً للمتطلبات القانونية والتنظيمية في جمهورية مصر العربية (عادة 10 سنوات كحد أدنى للسجلات الطبية). يتم حذف بيانات التسويق والاستخدام بعد 24 شهراً من عدم النشاط.</p>
+            </section>
+
+            <section>
+                <h2>8. أمان البيانات</h2>
+                <ul>
+                    <li>اتصال مشفر (HTTPS/TLS) لجميع عمليات نقل البيانات</li>
+                    <li>كلمات مرور مشفرة باستخدام SHA-256 مع ملح (salt)</li>
+                    <li>حماية لوحة الإدارة بـ CSRF و Rate Limiting</li>
+                    <li>سجل تدقيق (Audit Log) لجميع العمليات الحساسة</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>9. ملفات تعريف الارتباط (Cookies)</h2>
+                <p>يستخدم الموقع ملفات تعريف ارتباط ضرورية فقط للجلسات (Session Cookies) ولا يستخدم ملفات تتبع أو تحليلات طرف ثالث دون موافقة.</p>
+            </section>
+
+            <section>
+                <h2>10. التواصل معنا</h2>
+                <p>للاستفسار عن سياسة الخصوصية أو ممارسة حقوقك، يرجى التواصل عبر:</p>
+                <ul>
+                    <li>البريد الإلكتروني: <a href="mailto:{{ clinic.clinic_email }}" class="ltr">{{ clinic.clinic_email }}</a></li>
+                    <li>الواتساب: <a href="https://wa.me/{{ clinic.whatsapp }}" target="_blank" rel="noopener noreferrer" class="ltr">+{{ clinic.whatsapp }}</a></li>
+                </ul>
+            </section>
+
+            <p class="last-updated">آخر تحديث: {{ datetime.now().strftime('%Y-%m-%d') }}</p>
+        </article>
+
+        <a href="/" class="back-link"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i> العودة للرئيسية</a>
+    </div>
+</main>
+<footer class="site-footer"><nav><a href="/">الرئيسية</a><a href="/about">عن العيادة</a><a href="/terms">شروط الاستخدام</a><a href="/privacy">سياسة الخصوصية</a></nav><p>© 2026 {{ clinic.name }} — جميع الحقوق محفوظة</p></footer>
+<footer class="social-footer"><a href="https://wa.me/{{ clinic.whatsapp }}" target="_blank" rel="noopener" aria-label="واتساب"><i class="fab fa-whatsapp"></i></a><a href="{{ clinic.facebook }}" target="_blank" rel="noopener" aria-label="فيسبوك"><i class="fab fa-facebook"></i></a><a href="{{ clinic.instagram }}" target="_blank" rel="noopener" aria-label="انستغرام"><i class="fab fa-instagram"></i></a></footer>
+{% endblock %}

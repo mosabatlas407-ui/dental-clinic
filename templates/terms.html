@@ -1,0 +1,182 @@
+{% extends "base_frontend.html" %}
+
+{% set seo_title = "شروط الاستخدام | {{ clinic.name }}" %}
+{% set seo_description = "شروط وأحكام استخدام موقع {{ clinic.name }} لحجز مواعيد طب الأسنان. يرجى قراءتها بعناية قبل استخدام خدماتنا." %}
+{% set seo_keywords = "شروط الاستخدام، أحكام الخدمة، حجز مواعيد، {{ clinic.name }}" %}
+{% set canonical_url = url_for('terms', _external=True) %}
+{% set og_image = url_for('static', filename='images/og-default.svg', _external=True) %}
+
+{% block styles %}
+<style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Cairo', system-ui, sans-serif; background: linear-gradient(135deg, var(--mint-bg), var(--white)); color: var(--text-dark); line-height: 1.8; }
+    .container { max-width: 800px; margin: 0 auto; padding: 40px 20px; }
+    .legal-header { text-align: center; margin-bottom: 40px; padding-bottom: 20px; border-bottom: 2px solid var(--mint-light); }
+    .legal-header h1 { color: var(--mint-title); font-size: 2.5rem; margin-bottom: 10px; }
+    .legal-header p { color: var(--text-muted); font-size: 1.1rem; }
+    .legal-content { background: var(--white); border-radius: 16px; padding: 40px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
+    .legal-content h2 { color: var(--mint-title); font-size: 1.5rem; margin: 30px 0 15px; padding-bottom: 10px; border-bottom: 1px solid var(--mint-light); }
+    .legal-content h3 { color: var(--mint-primary); font-size: 1.2rem; margin: 20px 0 10px; }
+    .legal-content p { margin-bottom: 15px; color: var(--text-dark); }
+    .legal-content ul { margin: 15px 0 15px 30px; }
+    .legal-content li { margin-bottom: 8px; color: var(--text-dark); }
+    .legal-content .highlight { background: var(--mint-bg); padding: 15px; border-radius: 10px; border-right: 4px solid var(--mint-primary); margin: 20px 0; }
+    .legal-content .warning { background: #fef3c7; padding: 15px; border-radius: 10px; border-right: 4px solid var(--warning); margin: 20px 0; }
+    .last-updated { text-align: center; color: var(--text-muted); font-size: 0.9rem; margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--mint-light); }
+    .back-link { display: inline-block; margin-top: 30px; padding: 12px 24px; background: var(--mint-primary); color: var(--white); text-decoration: none; border-radius: 10px; font-weight: 700; }
+    .back-link:hover { background: var(--mint-dark); }
+    .site-header { background: linear-gradient(90deg, var(--mint-dark), var(--mint-primary)); color: var(--white); padding: 20px; text-align: center; }
+    .site-header h1 a { color: var(--white); text-decoration: none; }
+    .site-header .branches span { background: rgba(255,255,255,.2); padding: 4px 14px; border-radius: 20px; margin: 4px; display: inline-block; }
+    .main-nav { background: var(--white); border-bottom: 3px solid var(--mint-primary); display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; padding: 12px; }
+    .main-nav a { text-decoration: none; color: var(--mint-title); font-weight: 700; padding: 8px 16px; border-radius: 25px; }
+    .main-nav a:hover { background: var(--mint-light); }
+    .main-nav a.active { background: var(--mint-primary); color: var(--white); }
+    .site-footer { background: var(--white); border-top: 2px solid var(--mint-primary); text-align: center; padding: 16px 14px; color: var(--text-muted); }
+    .site-footer nav { display: flex; justify-content: center; gap: 16px; margin-bottom: 8px; flex-wrap: wrap; }
+    .site-footer nav a { color: var(--mint-title); text-decoration: none; font-weight: 700; }
+    .social-footer { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--white); border-top: 2px solid var(--mint-primary); display: flex; justify-content: center; gap: 30px; padding: 10px 0; font-size: 1.7rem; }
+    body { padding-bottom: 70px; }
+    @media (max-width: 768px) { .container { padding: 24px 12px; } .legal-content { padding: 24px 16px; } .main-nav a { font-size: .85rem; padding: 6px 10px; } .legal-header h1 { font-size: 1.8rem; } }
+
+    /* Skip Link */
+    .skip-link { position: absolute; top: -40px; left: 0; background: var(--mint-primary); color: var(--white); padding: 8px 16px; z-index: 10000; text-decoration: none; font-weight: 600; border-radius: 0 0 8px 0; }
+    .skip-link:focus { top: 0; }
+
+    /* Focus States */
+    a:focus { outline: 3px solid var(--mint-primary); outline-offset: 2px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<header class="site-header"><h1><a href="/"><i class="fa-solid fa-tooth"></i> {{ clinic.name }}</a></h1><div class="branches">{% for b in clinic.branch_list %}<span><i class="fa-solid fa-location-dot"></i> {{ b }}</span>{% endfor %}</div></header>
+<nav class="main-nav"><a href="/">الرئيسية</a><a href="/book">احجز موعد</a><a href="/about">عن العيادة</a><a href="/terms" class="active">شروط الاستخدام</a><a href="/privacy">سياسة الخصوصية</a></nav>
+<main id="main-content" role="main">
+    <div class="container">
+        <header class="legal-header">
+            <h1><i class="fa-solid fa-file-contract" aria-hidden="true"></i> شروط الاستخدام</h1>
+            <p>{{ clinic.name }} - القواعد المنظمة لاستخدام خدماتنا الإلكترونية</p>
+        </header>
+
+        <article class="legal-content">
+            <section>
+                <h2>1. القبول بالشروط</h2>
+                <p>باستخدامك لموقع <strong>{{ clinic.name }}</strong> وخدماته (حجز المواعيد، استعراض المعلومات، التواصل)، فإنك توافق على الالتزام بهذه الشروط والأحكام. إذا كنت لا توافق على أي جزء منها، يرجى عدم استخدام الموقع.</p>
+            </section>
+
+            <section>
+                <h2>2. وصف الخدمة</h2>
+                <p>يوفر الموقع منصة إلكترونية لـ:</p>
+                <ul>
+                    <li>حجز مواعيد الكشف والعلاج لدى عيادات الأسنان التابعة لنا</li>
+                    <li>اختيار نوع الخدمة (استشارة، حجز مستعجل، عملية جراحية)</li>
+                    <li>استلام تأكيدات المواعيد والتذكيرات عبر البريد الإلكتروني</li>
+                    <li>التواصل مع العيادة عبر الواتساب أو وسائل التواصل الاجتماعي</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>3. أهلية الاستخدام</h2>
+                <ul>
+                    <li>يجب أن يكون عمر المستخدم 18 عاماً أو أكثر، أو استخدام الموقع تحت إشراف ولي أمر</li>
+                    <li>يجب تقديم معلومات دقيقة وكاملة وصحيحة عند الحجز</li>
+                    <li>المستخدم مسؤول عن سرية حسابه وبيانات دخوله</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>4. حجز المواعيد</h2>
+                <div class="highlight">
+                    <p><strong>ملاحظة:</strong> الحجز عبر الموقع يطلب أقرب موعد متاح تلقائياً (الأحد-الخميس، 9 صباحاً - 5 مساءً). الإدارة تحتفظ بحق تعديل الموعد وتأكيده مع المريض.</p>
+                </div>
+                <ul>
+                    <li>المواعيد المتاحة تخضع للتغيير حسب توفر الأطباء</li>
+                    <li>تأكيد الحجز النهائي يتم بعد مراجعة الإدارة</li>
+                    <li>يمكن للإدارة التواصل مع المريض لتعديل الموعد أو تأكيده</li>
+                    <li>في حال عدم توفر مواعيد، سيتم إعلام المريض بأقرب بديل</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>5. الإلغاء والتعديل</h2>
+                <ul>
+                    <li>يمكن للمريض طلب إلغاء أو تعديل الموعد بالتواصل مع العيادة مباشرة</li>
+                    <li>يُنصح بالإبلاغ قبل 24 ساعة على الأقل لإتاحة الموعد لمريض آخر</li>
+                    <li>الإلغاء المتكرر دون إشعار قد يؤثر على أولوية الحجوزات المستقبلية</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>6. الأسعار والدفع</h2>
+                <div class="warning">
+                    <p><strong>تنبيه:</strong> الأسعار المعروضة على الموقع هي أسعار تقديرية للخدمات الأساسية. السعر النهائي يحدد بعد الفحص الطبي ويجوز إضافة خدمات إضافية حسب الحاجة الطبية.</                </div>
+                <ul>
+                    <li>الأسعار بالجنيه المصري (EGP) وتشمل ضريبة القيمة المضافة إن وجدت</li>
+                    <li>الدفع يتم في العيادة نقداً أو بالبطاقات المقبولة</li>
+                    <li>يتم إصدار فاتورة رسمية بكل خدمة مقدمة</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>7. المسؤولية الطبية</h2>
+                <ul>
+                    <li>الموقع يوفر خدمة حجز فقط ولا يقدم استشارات طبية أو تشخيصاً</li>
+                    <li>التشخيص والعلاج يتم حصرياً من قبل الأطباء المرخصين في العيادة</li>
+                    <li>المعلومات المعروضة على الموقع للأغراض التعليمية فقط ولا تغني عن استشارة طبية</li>
+                    <li>في الحالات الطارئة، يرجى التوجه لأقرب طوارئ أو الاتصال بالإسعاف</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>8. الملكية الفكرية</h2>
+                <p>جميع محتويات الموقع (النصوص، الصور، الشعارات، التصاميم، الكود) ملك لـ <strong>{{ clinic.name }}</strong> ومحمية بقوانين الملكية الفكرية. يمنع النسخ أو إعادة النشر أو الاستخدام التجاري دون إذن كتابي مسبق.</p>
+            </section>
+
+            <section>
+                <h2>9. سلوك المستخدم</h2>
+                <p>يمنع منعاً باتاً:</p>
+                <ul>
+                    <li>استخدام الموقع لأغراض غير قانونية أو ضارة</li>
+                    <li>محاولة اختراق النظام أو حقن أكواد ضارة</li>
+                    <li>إرسال رسائل غير مرغوب فيها (Spam) عبر نماذج الموقع</li>
+                    <li>انتحال شخصية الغير أو تقديم بيانات كاذبة</li>
+                    <li>إعاقة عمل الموقع أو تحميله فوق طاقته</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>10. إخلاء المسؤولية</h2>
+                <div class="warning">
+                    <p>يتم تقديم الموقع والخدمات "كما هي" دون ضمانات من أي نوع، صريحة أو ضمنية. لا نضمن خلو الموقع من الأخطاء أو الانقطاع، ولا نتحمل مسؤولية أي أضرار مباشرة أو غير مباشرة ناتجة عن استخدام الموقع.</p>
+                </div>
+            </section>
+
+            <section>
+                <h2>11. تعديل الشروط</h2>
+                <p>نحتفظ بحق تعديل هذه الشروط في أي وقت. سيتم نشر النسخة المحدثة على هذه الصفحة مع تحديث تاريخ "آخر تعديل". الاستمرار في استخدام الموقع بعد التعديلات يعني قبولك لها.</p>
+            </section>
+
+            <section>
+                <h2>12. القانون الحاكم والاختصاص</h2>
+                <p>تخضع هذه الشروط لقوانين جمهورية مصر العربية. أي نزاع ينشأ عنها يخضع للاختصاص القضائي الحصري للمحاكم المصرية.</p>
+            </section>
+
+            <section>
+                <h2>13. التواصل معنا</h2>
+                <p>للاستفسار عن هذه الشروط، يرجى التواصل عبر:</p>
+                <ul>
+                    <li>البريد الإلكتروني: <a href="mailto:{{ clinic.clinic_email }}" class="ltr">{{ clinic.clinic_email }}</a></li>
+                    <li>الواتساب: <a href="https://wa.me/{{ clinic.whatsapp }}" target="_blank" rel="noopener noreferrer" class="ltr">+{{ clinic.whatsapp }}</a></li>
+                    <li>زيارة أحد فروعنا: {% for branch in clinic.branch_list %}{{ branch }}{% if not loop.last %}، {% endif %}{% endfor %}</li>
+                </ul>
+            </section>
+
+            <p class="last-updated">آخر تحديث: {{ datetime.now().strftime('%Y-%m-%d') }}</p>
+        </article>
+
+        <a href="/" class="back-link"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i> العودة للرئيسية</a>
+    </div>
+</main>
+<footer class="site-footer"><nav><a href="/">الرئيسية</a><a href="/about">عن العيادة</a><a href="/terms">شروط الاستخدام</a><a href="/privacy">سياسة الخصوصية</a></nav><p>© 2026 {{ clinic.name }} — جميع الحقوق محفوظة</p></footer>
+<footer class="social-footer"><a href="https://wa.me/{{ clinic.whatsapp }}" target="_blank" rel="noopener" aria-label="واتساب"><i class="fab fa-whatsapp"></i></a><a href="{{ clinic.facebook }}" target="_blank" rel="noopener" aria-label="فيسبوك"><i class="fab fa-facebook"></i></a><a href="{{ clinic.instagram }}" target="_blank" rel="noopener" aria-label="انستغرام"><i class="fab fa-instagram"></i></a></footer>
+{% endblock %}

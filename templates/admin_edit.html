@@ -4,6 +4,7 @@
 <h1 class="page-title">✏️ تعديل الموعد #{{ appointment_id }}</h1>
 <div class="card card-narrow">
   <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <label>التاريخ الحالي: <strong style="color:var(--teal-dark);">{{ current_date }}</strong></label>
     <input type="date" name="new_date" value="{{ current_date }}" required>
     <label>الوقت الحالي: <strong style="color:var(--teal-dark);">{{ current_time }}</strong></label>

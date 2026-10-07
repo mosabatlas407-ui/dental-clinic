@@ -1,0 +1,92 @@
+{% extends "base_frontend.html" %}
+
+{% set seo_title = "تم حجز الموعد بنجاح | {{ clinic.name }}" %}
+{% set seo_description = "تم تأكيد حجز موعدك في {{ clinic.name }}. راجع بريدك الإلكتروني للحصول على تفاصيل الموعد والتذكيرات." %}
+{% set seo_keywords = "تأكيد حجز، موعد أسنان، {{ clinic.name }}" %}
+{% set canonical_url = url_for('home', _external=True) %}
+{% set og_image = url_for('static', filename='images/og-default.svg', _external=True) %}
+
+{% block styles %}
+<style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+        font-family: 'Cairo', system-ui, sans-serif;
+        background: linear-gradient(135deg, var(--mint-bg), var(--white));
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+    }
+    .success-card {
+        background: var(--white); border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        padding: 40px; width: 100%; max-width: 500px; text-align: center;
+    }
+    .success-icon {
+        width: 80px; height: 80px; background: linear-gradient(135deg, var(--success), #34d399);
+        border-radius: 50%; display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 20px; font-size: 2.5rem; color: var(--white);
+    }
+    .success-card h2 { color: var(--mint-primary); margin-bottom: 10px; }
+    .success-card p { color: var(--text-muted); margin-bottom: 20px; }
+    .details { text-align: right; margin: 20px 0; line-height: 2.5; background: var(--mint-bg); padding: 20px; border-radius: 12px; }
+    .details p { margin: 0; }
+    .details strong { color: var(--text-dark); }
+    .btn-primary {
+        display: inline-block; padding: 14px 30px; background: linear-gradient(90deg, var(--mint-primary), var(--mint-dark));
+        color: var(--white); text-decoration: none; border-radius: 10px; font-weight: 700;
+        font-family: 'Cairo', sans-serif; transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(20,184,166,0.4); }
+    .whatsapp-btn {
+        display: inline-flex; align-items: center; gap: 10px; padding: 14px 30px;
+        background: #25D366; color: var(--white); text-decoration: none; border-radius: 10px;
+        font-weight: 700; font-family: 'Cairo', sans-serif; margin-top: 15px;
+        transition: background 0.2s, transform 0.2s;
+    }
+    .whatsapp-btn:hover { background: #128C7E; transform: translateY(-2px); }
+
+    /* Skip Link */
+    .skip-link {
+        position: absolute; top: -40px; left: 0; background: var(--mint-primary);
+        color: var(--white); padding: 8px 16px; z-index: 10000;
+        text-decoration: none; font-weight: 600; border-radius: 0 0 8px 0;
+    }
+    .skip-link:focus { top: 0; }
+
+    /* Focus States */
+    a:focus, button:focus { outline: 3px solid var(--mint-primary); outline-offset: 2px; }
+
+    /* Mobile */
+    @media (max-width: 480px) {
+        .success-card { padding: 30px 20px; }
+        .details { font-size: 0.95rem; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<main id="main-content" role="main">
+    <div class="success-card" role="status" aria-live="polite">
+        <div class="success-icon" aria-hidden="true"><i class="fa-solid fa-check"></i></div>
+        <h2>تم حجز الموعد بنجاح!</h2>
+        <p>شكراً لاختيارك <strong>{{ clinic.name }}</strong>. تم تأكيد حجزك وسيصلك إيميل بالتفاصيل.</p>
+        
+        <div class="details" aria-label="تفاصيل الموعد">
+            <p><strong>الاسم:</strong> {{ name }}</p>
+            <p><strong>نوع الحجز:</strong> {{ booking_type_ar }}</p>
+            <p><strong>تشخيص الحالة:</strong> {{ address }}</p>
+            <p><strong>التاريخ:</strong> {{ appointment_date }}</p>
+            <p><strong>الوقت:</strong> {{ appointment_time }}</p>
+        </div>
+        
+        <a href="/" class="btn-primary"><i class="fa-solid fa-house" aria-hidden="true"></i> العودة للرئيسية</a>
+        
+        {% if whatsapp_url %}
+        <a href="{{ whatsapp_url }}" target="_blank" rel="noopener noreferrer" class="whatsapp-btn" aria-label="مشاركة الموعد عبر واتساب">
+            <i class="fa-brands fa-whatsapp" aria-hidden="true"></i> مشاركة الموعد
+        </a>
+        {% endif %}
+    </div>
+</main>
+{% endblock %}

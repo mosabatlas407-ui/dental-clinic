@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Background circle -->
+  <circle cx="50" cy="50" r="48" fill="#14b8a6"/>
+  <!-- Tooth icon -->
+  <path d="M50 20 
+           C35 20 25 30 25 45 
+           C25 55 32 62 38 68 
+           L35 85 
+           L65 85 
+           L62 68 
+           C68 62 75 55 75 45 
+           C75 30 65 20 50 20 Z" 
+        fill="white"/>
+  <!-- Inner detail -->
+  <path d="M50 30 
+           C42 30 36 36 36 44 
+           C36 49 40 53 44 56 
+           L43 68 
+           L57 68 
+           L56 56 
+           C60 53 64 49 64 44 
+           C64 36 58 30 50 30 Z" 
+        fill="#14b8a6"/>
+</svg>

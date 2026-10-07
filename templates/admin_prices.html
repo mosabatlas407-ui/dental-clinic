@@ -8,6 +8,7 @@
 
 <div class="card card-narrow">
   <form action="/admin/prices" method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <div class="price-row" style="display:flex; align-items:center; justify-content:space-between; padding:16px 0; border-bottom:1px solid var(--border-color); gap:16px; flex-wrap:wrap;">
       <span>
         <span style="font-size:1.8rem; margin-left:10px;">🩺</span>

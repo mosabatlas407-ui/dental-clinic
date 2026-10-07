@@ -21,6 +21,7 @@
         <td>{{ item[2] }}</td>
         <td>
           <form action="/admin/invoices/{{ inv[0] }}" method="post" style="display:inline;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="action" value="delete_item">
             <input type="hidden" name="item_id" value="{{ item[0] }}">
             <button type="submit" class="a-cancel">حذف</button>
@@ -44,6 +45,7 @@
   </div>
 
   <form action="/admin/invoices/{{ inv[0] }}" method="post" style="text-align:center; margin-bottom:16px;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <input type="hidden" name="action" value="add_item">
     <input type="text" name="description" placeholder="اسم الخدمة" required style="width:200px; display:inline-block; margin:4px;">
     <input type="number" name="price" placeholder="السعر (ج.م)" min="0" step="0.01" required style="width:140px; display:inline-block; margin:4px;">
@@ -52,6 +54,7 @@
 
   <div style="text-align:center; margin-top:16px;">
     <form action="/admin/invoices/{{ inv[0] }}" method="post" style="display:inline;">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <input type="hidden" name="action" value="toggle_status">
       <button type="submit" class="btn btn-amber" style="width:auto; padding:10px 18px; display:inline-block; margin:5px;">{% if inv[5] == 'مدفوعة' %}↩️ إلغاء الدفع{% else %}💵 تأكيد الدفع{% endif %}</button>
     </form>

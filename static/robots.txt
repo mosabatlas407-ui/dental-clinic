@@ -1,0 +1,12 @@
+# Robots.txt for Dental Clinic Website
+User-agent: *
+Allow: /
+
+# Disallow admin area
+Disallow: /admin/
+
+# Sitemap
+Sitemap: https://atlas-14b11.containers.snapdeploy.app/sitemap.xml
+
+# Host
+Host: https://atlas-14b11.containers.snapdeploy.app

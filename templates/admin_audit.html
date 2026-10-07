@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>سجل الأحداث - {{ clinic.name }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --mint-primary: #14b8a6;
+      --mint-dark: #115e59;
+      --mint-light: #ccfbf1;
+      --mint-bg: #f0fdfa;
+      --text-dark: #0f172a;
+      --text-muted: #64748b;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --success: #10b981;
+      --white: #ffffff;
+      --radius-card: 16px;
+      --radius-btn: 12px;
+      --radius-input: 12px;
+      --radius-pill: 12px;
+      --shadow-soft: 0 10px 30px -10px rgba(20, 184, 166, 0.18);
+      --shadow-hover: 0 12px 24px -6px rgba(20, 184, 166, 0.3);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif;
+      background: var(--mint-bg);
+      color: var(--text-dark);
+      min-height: 100vh;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+    .container { max-width: 1280px; margin: 0 auto; padding: 0 20px; }
+
+    /* Header */
+    .admin-header {
+      background: var(--white);
+      border-bottom: 2px solid var(--mint-light);
+      padding: 16px 0;
+      position: sticky; top: 0; z-index: 50;
+      box-shadow: 0 4px 16px rgba(20, 184, 166, 0.06);
+    }
+    .admin-header .inner {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 16px; flex-wrap: wrap;
+    }
+    .brand {
+      display: flex; align-items: center; gap: 12px;
+      font-size: 1.45rem; font-weight: 900; color: var(--mint-primary);
+      text-decoration: none;
+    }
+    .brand-icon {
+      width: 44px; height: 44px;
+      background: var(--mint-light);
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem;
+    }
+    .header-nav { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .nav-link {
+      background: var(--mint-bg); color: var(--mint-dark);
+      border: 2px solid var(--mint-light); border-radius: var(--radius-btn);
+      padding: 9px 18px; font-weight: 800; font-size: 0.9rem;
+      text-decoration: none; font-family: 'Cairo', sans-serif;
+      transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px;
+    }
+    .nav-link:hover { background: var(--mint-light); box-shadow: 0 6px 14px rgba(20, 184, 166, 0.15); }
+    .nav-link.active { background: var(--mint-primary); color: var(--white); border-color: var(--mint-primary); }
+    .logout-link {
+      background: var(--mint-bg); color: var(--text-muted);
+      border: 2px solid var(--mint-light); border-radius: var(--radius-btn);
+      padding: 9px 18px; font-weight: 800; font-size: 0.9rem;
+      text-decoration: none; font-family: 'Cairo', sans-serif;
+      transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px;
+    }
+    .logout-link:hover { background: var(--mint-light); color: var(--mint-dark); }
+
+    /* Page Title */
+    .page-header {
+      text-align: center; padding: 32px 0 24px;
+    }
+    .page-title {
+      font-size: 1.85rem; font-weight: 900;
+      color: var(--mint-dark);
+      margin-bottom: 8px;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+    }
+    .page-sub {
+      color: var(--text-muted);
+      font-weight: 600; font-size: 0.95rem;
+    }
+
+    /* Table Card */
+    .table-card {
+      background: var(--white);
+      border-radius: var(--radius-card);
+      box-shadow: var(--shadow-soft);
+      border: 1px solid var(--mint-light);
+      overflow-x: auto;
+    }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 14px 12px; text-align: center; vertical-align: middle; }
+    th {
+      background: var(--mint-primary);
+      color: var(--white);
+      font-weight: 800;
+      font-size: 0.9rem;
+    }
+    th:first-child { border-top-right-radius: var(--radius-card); }
+    th:last-child { border-top-left-radius: var(--radius-card); }
+    td {
+      border-bottom: 1px solid var(--mint-light);
+      font-size: 0.92rem;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--mint-bg); }
+
+    /* Badges */
+    .badge {
+      padding: 4px 12px; border-radius: var(--radius-pill);
+      font-size: 0.82rem; font-weight: 800; display: inline-flex; align-items: center; gap: 6px;
+    }
+    .badge-success { background: #d1fae5; color: #065f46; }
+    .badge-danger { background: #fee2e2; color: #991b1b; }
+    .badge-warning { background: #fff3e0; color: #c2410c; }
+    .badge-info { background: #e0f2fe; color: #0369a1; }
+    .badge-secondary { background: #f1f5f9; color: #475569; }
+    .ip-col { font-family: monospace; font-size: 0.8rem; color: var(--text-muted); }
+    .details-col { text-align: right; max-width: 400px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* Pagination Note */
+    .pagination-note {
+      text-align: center; color: var(--text-muted);
+      font-size: 0.85rem; margin-top: 16px; padding: 8px;
+    }
+
+    /* Back Link */
+    .back-link {
+      display: inline-flex; align-items: center; gap: 8px;
+      margin-top: 24px; padding: 12px 24px;
+      background: var(--white); color: var(--mint-primary);
+      text-decoration: none; font-weight: 800;
+      border-radius: var(--radius-btn);
+      border: 2px solid var(--mint-light);
+      transition: all 0.2s;
+    }
+    .back-link:hover { background: var(--mint-light); border-color: var(--mint-primary); color: var(--mint-dark); }
+
+    /* Empty State */
+    .empty-state {
+      background: var(--white);
+      border-radius: var(--radius-card);
+      box-shadow: var(--shadow-soft);
+      border: 1px solid var(--mint-light);
+      padding: 60px 40px;
+      text-align: center;
+    }
+    .empty-state i { font-size: 3rem; color: var(--mint-light); margin-bottom: 16px; }
+    .empty-state h3 { color: var(--mint-dark); font-size: 1.3rem; margin-bottom: 8px; }
+    .empty-state p { color: var(--text-muted); font-weight: 600; font-size: 1rem; line-height: 1.8; }
+
+    /* Mobile Card Layout */
+    @media (max-width: 768px) {
+      .container { padding: 0 14px; }
+      .admin-header .inner { flex-direction: column; gap: 12px; }
+      .header-nav { width: 100%; justify-content: center; }
+      .page-title { font-size: 1.4rem; }
+      .brand { font-size: 1.2rem; }
+      .brand-icon { width: 38px; height: 38px; font-size: 1.2rem; }
+      th, td { padding: 10px 8px; font-size: 0.8rem; }
+      
+      /* Table -> Cards on mobile */
+      .table-card { border-radius: 14px; }
+      .hide-mobile { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="admin-header">
+    <div class="container inner">
+      <a href="/" class="brand">
+        <div class="brand-icon"><i class="fa-solid fa-tooth"></i></div>
+        <span>{{ clinic.name }}</span>
+      </a>
+      <nav class="header-nav">
+        <a href="/admin/dashboard" class="nav-link"><i class="fa-solid fa-calendar-days"></i> المواعيد</a>
+        <a href="/admin/audit" class="nav-link active"><i class="fa-solid fa-list"></i> سجل الأحداث</a>
+        <a href="/admin/settings" class="nav-link"><i class="fa-solid fa-gear"></i> الإعدادات</a>
+        <a href="/admin/logout" class="logout-link"><i class="fa-solid fa-right-from-bracket"></i> تسجيل الخروج</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="container" style="padding: 32px 20px 80px;">
+    <!-- Page Title -->
+    <header class="page-header">
+      <h1 class="page-title"><i class="fa-solid fa-history"></i> سجل الأحداث</h1>
+      <p class="page-sub">آخر {{ logs|length if logs else 0 }} حدث مسجل</p>
+    </header>
+
+    <!-- Audit Log Table -->
+    {% if logs %}
+    <div class="table-card">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>الوقت</th>
+            <th>الحدث</th>
+            <th>التفاصيل</th>
+            <th>IP</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for log in logs %}
+          <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ log[1] if log[1] else '—' }}</td>
+            <td>
+              {% set action = log[2] %}
+              {% if action == 'admin_login_success' %}
+                <span class="badge badge-success"><i class="fa-solid fa-circle-check"></i> دخول ناجح</span>
+              {% elif action == 'admin_login_failed' %}
+                <span class="badge badge-danger"><i class="fa-solid fa-circle-xmark"></i> دخول فاشل</span>
+              {% elif action == 'admin_logout' %}
+                <span class="badge badge-secondary"><i class="fa-solid fa-right-from-bracket"></i> خروج</span>
+              {% elif action == 'appointment_cancelled' %}
+                <span class="badge badge-danger"><i class="fa-solid fa-trash"></i> إلغاء موعد</span>
+              {% elif action == 'appointment_edited' %}
+                <span class="badge badge-warning"><i class="fa-solid fa-pen"></i> تعديل موعد</span>
+              {% elif action == 'settings_updated' %}
+                <span class="badge badge-info"><i class="fa-solid fa-gear"></i> تحديث إعدادات</span>
+              {% elif action == 'appointment_completed' %}
+                <span class="badge badge-success"><i class="fa-solid fa-check-double"></i> إكمال موعد</span>
+              {% elif action == 'booking_created' %}
+                <span class="badge badge-success"><i class="fa-solid fa-calendar-plus"></i> حجز جديد</span>
+              {% elif action == 'reminder_sent' %}
+                <span class="badge badge-info"><i class="fa-solid fa-bell"></i> تذكير مرسل</span>
+              {% elif action == 'pdf_generated' %}
+                <span class="badge badge-info"><i class="fa-solid fa-file-pdf"></i> PDF مولّد</span>
+              {% elif action == 'invoice_status_toggled' %}
+                <span class="badge badge-warning"><i class="fa-solid fa-money-bill"></i> حالة فاتورة</span>
+              {% else %}
+                <span class="badge badge-secondary"><i class="fa-solid fa-circle-info"></i> {{ action }}</span>
+              {% endif %}
+            </td>
+            <td class="details-col" title="{{ log[3] if log[3] else '—' }}">{{ log[3] if log[3] else '—' }}</td>
+            <td class="ip-col">{{ log[4] if log[4] else '—' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% if logs|length >= 200 %}
+    <p class="pagination-note">⚠️ يتم عرض آخر 200 حدث فقط.</p>
+    {% endif %}
+    {% else %}
+    <div class="empty-state">
+      <i class="fa-solid fa-inbox"></i>
+      <h3>لا توجد أحداث مسجلة</h3>
+      <p>سيظهر سجل الأحداث هنا عند حدوث أي نشاط في النظام.</p>
+    </div>
+    {% endif %}
+
+    <a href="/admin/dashboard" class="back-link"><i class="fa-solid fa-arrow-right"></i> العودة للوحة التحكم</a>
+  </main>
+</body>
+</html>

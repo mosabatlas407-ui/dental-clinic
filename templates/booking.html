@@ -141,6 +141,7 @@
     </div>
     <div class="type-note">سيُحدد لك أقرب موعد متاح تلقائيًا (الأحد - الخميس)</div>
     <form action="/book" method="post">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <input type="hidden" name="booking_type" value="{{ booking_type }}">
       <label>الاسم الكامل:</label>
       <input type="text" name="name" required placeholder="اكتب اسمك الثلاثي">

@@ -1,6 +1,37 @@
-from flask import Flask, render_template, request, redirect, session
+from flask import Flask, render_template, request, redirect, session, flash, url_for
 import db
 import hashlib
+from werkzeug.security import generate_password_hash, check_password_hash
+try:
+    from flask_limiter import Limiter  # type: ignore[import-not-found]
+    from flask_limiter.util import get_remote_address  # type: ignore[import-not-found]
+except ImportError:  # Optional dependency; fallback keeps the app runnable without it.
+    class Limiter:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def limit(self, *args, **kwargs):
+            def decorator(func):
+                return func
+            return decorator
+
+    def get_remote_address():
+        return "127.0.0.1"
+
+try:
+    from flask_wtf.csrf import CSRFProtect, CSRFError  # type: ignore[import-not-found]
+except ImportError:  # Optional dependency; fallback keeps the app runnable without it.
+    class CSRFError(Exception):
+        pass
+
+    class CSRFProtect:
+        def __init__(self, app=None):
+            if app is not None:
+                self.init_app(app)
+
+        def init_app(self, app):
+            pass
+
 from datetime import datetime, timedelta
 import traceback, sys
 import os
@@ -9,7 +40,18 @@ from email_service import (send_booking_confirmation, send_reminder,
                            smtp_configured, refresh_clinic_name, get_clinic_name)
 
 app = Flask(__name__)
-app.secret_key = 'dental_clinic_secret_key_2026'
+app.secret_key = os.environ.get('SECRET_KEY', 'dental_clinic_secret_key_2026')
+
+# تفعيل حماية CSRF على مستوى التطبيق
+csrf = CSRFProtect(app)
+
+# تفعيل معدل المحاولات (Limiter) لمنع هجمات التخمين
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["200 per day", "50 per hour"],
+    storage_uri="memory://"
+)
 
 DEFAULT_PRICES = {'consultation': 150, 'urgent': 250, 'surgery': 500}
 
@@ -23,7 +65,8 @@ CLINIC_DEFAULTS = {
 }
 
 def hash_password(password):
-    return hashlib.sha256(password.encode('utf-8')).hexdigest()
+    """تشفير كلمة المرور بـ Salt تلقائي عبر Werkzeug"""
+    return generate_password_hash(password)
 
 def get_setting(key, default=''):
     s = get_settings()
@@ -41,10 +84,14 @@ def get_clinic():
     return data
 
 def verify_admin_password(password):
+    """التحقق من كلمة المرور مع دعم التشفير القديم (SHA256) والجديد (Werkzeug)"""
     stored = get_setting('admin_password_hash')
     if not stored:
         return password == 'admin123'
-    return hash_password(password) == stored
+    # التوافق مع التشفير القديم SHA256 (64 حرف)
+    if len(stored) == 64 and not (stored.startswith('scrypt:') or stored.startswith('pbkdf2:')):
+        return hashlib.sha256(password.encode('utf-8')).hexdigest() == stored
+    return check_password_hash(stored, password)
 
 def get_price(booking_type):
     """قراءة سعر نوع الحجز من الإعدادات مع الرجوع للسعر الافتراضي"""
@@ -56,7 +103,6 @@ def init_db():
     c = conn.cursor()
     db.init_schema(c)
     # ترحيل قديم: إضافة عمود email لو مش موجود.
-    # في PostgreSQL فشل أي أمر بيلغي المعاملة كلها، فنستخدم SAVEPOINT للعزل.
     try:
         c.execute('SAVEPOINT legacy_email_col')
         c.execute("ALTER TABLE patients ADD COLUMN email TEXT DEFAULT ''")
@@ -86,6 +132,24 @@ def internal_error(e):
     sys.stdout.flush()
     return "Internal Server Error", 500
 
+@app.errorhandler(CSRFError)
+def handle_csrf_error(e):
+    return f'''
+    <html dir="rtl" lang="ar"><head><meta charset="UTF-8"><title>خطأ في الجلسة</title>
+    <style>
+        body{{font-family:'Cairo',sans-serif;text-align:center;padding:50px;background:#f8fafc;}}
+        .box{{background:white;padding:30px;border-radius:16px;display:inline-block;box-shadow:0 4px 20px rgba(0,0,0,0.08);max-width:400px;}}
+        h3{{color:#ef4444;margin-bottom:10px;}}
+        p{{color:#64748b;font-size:0.95rem;line-height:1.6;}}
+        a{{display:inline-block;margin-top:15px;color:#14b8a6;text-decoration:none;font-weight:bold;}}
+    </style></head>
+    <body><div class="box">
+        <h3>⚠️ انتهت صلاحية الجلسة</h3>
+        <p>لم يتم التحقق من التوكن بنجاح. يرجى العودة وإعادة تحديث الصفحة ثم المحاولة مجدداً.</p>
+        <a href="javascript:history.back()">← العودة للصفحة السابقة</a>
+    </div></body></html>
+    ''', 400
+
 # ---------- الصفحة الرئيسية ----------
 @app.route('/')
 def home():
@@ -99,6 +163,7 @@ def booking_form():
 
 # ---------- معالجة الحجز ----------
 @app.route('/book', methods=['POST'])
+@limiter.limit("10 per minute")
 def book():
     name = request.form['name']
     age = str(request.form.get('age', '')).strip()
@@ -193,6 +258,7 @@ def find_next_available_slot(c):
 
 # ====================== Admin Routes ======================
 @app.route('/admin/login', methods=['GET', 'POST'])
+@limiter.limit("5 per minute")
 def admin_login():
     if request.method == 'POST':
         if verify_admin_password(request.form['password']):
@@ -213,7 +279,6 @@ def admin_dashboard():
         return redirect('/admin/login')
     conn = db.connect()
     c = conn.cursor()
-    # استخدام تاريخ اليوم بصيغة نصية لتجنب مشاكل التوقيت
     today_str = datetime.now().date().strftime('%Y-%m-%d')
     c.execute('''
         SELECT a.id, p.name, p.booking_type, a.appointment_date, a.appointment_time, p.address, a.status, p.email
@@ -328,7 +393,6 @@ def admin_change_password():
 
 @app.route('/admin/envcheck')
 def admin_envcheck():
-    """فحص تشخيصي: هل DATABASE_URL واصل للتطبيق وسليم؟"""
     if not session.get('admin'):
         return redirect('/admin/login')
     raw = os.environ.get('DATABASE_URL', '')
@@ -386,7 +450,6 @@ def admin_remind(appointment_id):
                            msg=f'📧 تذكير: {"✅ " + msg if ok else "❌ " + msg}')
 
 def send_daily_reminders():
-    """إرسال تذكير تلقائي لكل موعد غد"""
     if not smtp_configured():
         print('[reminder] SMTP غير مضبوط - تخطي الإرسال التلقائي')
         return
@@ -556,7 +619,6 @@ import arabic_reshaper
 from bidi.algorithm import get_display
 
 def find_arabic_font():
-    """البحث عن خط عربي: الملف المرفق مع المشروع أولاً ثم خطوط النظام"""
     bundled = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'fonts', 'Amiri-Regular.ttf')
     if os.path.exists(bundled):
         return bundled
@@ -660,10 +722,6 @@ def admin_invoice_pdf(invoice_id):
     '''
 
 # ====================== PDF Generation ======================
-from fpdf import FPDF
-import arabic_reshaper
-from bidi.algorithm import get_display
-
 class ArabicPDF(FPDF):
     def add_arabic_font(self):
         font_path = find_arabic_font()
@@ -681,7 +739,6 @@ def admin_pdf():
     c = conn.cursor()
     today = datetime.now().date()
     
-    # ✅ حساب الأحد الخاص بالأسبوع الحالي (وليس القادم)
     start_of_week = today - timedelta(days=(today.weekday() + 1) % 7)
     end_of_week = start_of_week + timedelta(days=4)  # الخميس
 

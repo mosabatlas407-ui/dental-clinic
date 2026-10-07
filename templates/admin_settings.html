@@ -9,6 +9,7 @@
 <div class="card card-narrow">
   <h3>🏥 بيانات العيادة</h3>
   <form action="/admin/settings" method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <label>اسم العيادة:</label>
     <input type="text" name="clinic_name" value="{{ settings.get('clinic_name','') }}" required>
     <label>الفروع (فرع في كل سطر):</label>
@@ -33,6 +34,7 @@
     <p class="status no">⚠️ البريد غير مضبوط — التذكيرات التلقائية متوقفة</p>
   {% endif %}
   <form action="/admin/settings" method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <label>بريد المرسل:</label>
     <input type="email" name="smtp_email" value="{{ settings.get('smtp_email','') }}" placeholder="clinic@gmail.com">
     <label>كلمة مرور البريد / مفتاح التطبيق:</label>
@@ -55,6 +57,7 @@
     📮 Brevo (بديل أسهل): سجل في <a href="https://app.brevo.com" target="_blank">app.brevo.com</a> ← SMTP & API ← خد السيرفر والبورت والمفتاح وحطهم هنا
   </div>
   <form action="/admin/settings/test" method="post" style="margin-top:16px;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <label>🔌 اختبار سريع — أرسل بريداً تجريبياً إلى:</label>
     <input type="email" name="test_email" class="ltr" placeholder="اكتب بريدك هنا" required>
     <button type="submit" class="btn btn-green" style="margin-top:14px;">🔌 إرسال بريد تجريبي</button>
@@ -64,6 +67,7 @@
 <div class="card card-narrow">
   <h3>🔑 تغيير كلمة مرور اللوحة</h3>
   <form action="/admin/change_password" method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <label>كلمة المرور الحالية:</label>
     <input type="password" name="current_password" required>
     <label>كلمة المرور الجديدة (6 أحرف على الأقل):</label>

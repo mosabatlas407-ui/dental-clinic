@@ -1,0 +1,21 @@
+{
+  "name": "عيادة دنتال كير - حجز مواعيد أسنان",
+  "short_name": "دنتال كير",
+  "description": "حجز مواعيد أونلاين لعيادة دنتال كير لطب وجراحة الأسنان في القاهرة",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f0fdfa",
+  "theme_color": "#14b8a6",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["health", "medical"],
+  "lang": "ar",
+  "dir": "rtl"
+}
