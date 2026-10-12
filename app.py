@@ -1,7 +1,7 @@
-from flask import Flask, render_template, request, redirect, session, flash, url_for
+from flask import Flask, render_template, request, redirect, session, flash, url_for  # type: ignore[import-not-found]
 import db
 import hashlib
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash  # type: ignore[import-not-found]
 try:
     from flask_limiter import Limiter  # type: ignore[import-not-found]
     from flask_limiter.util import get_remote_address  # type: ignore[import-not-found]
@@ -473,8 +473,17 @@ def send_daily_reminders():
             print(f'[reminder] فشل إرسال تذكير للموعد #{appt_id}: {msg}')
     print(f'[reminder] أُرسل {sent} تذكيراً لمواعيد {tomorrow}')
 
+try:
+    from apscheduler.schedulers.background import BackgroundScheduler  # type: ignore[import-not-found]
+except ImportError:  # pragma: no cover - APScheduler is optional in some environments
+    BackgroundScheduler = None
+
+
 def start_scheduler():
-    from apscheduler.schedulers.background import BackgroundScheduler
+    if BackgroundScheduler is None:
+        print('[scheduler] APScheduler غير مثبت - تم تعطيل المجدول')
+        return
+
     scheduler = BackgroundScheduler(daemon=True, timezone='Africa/Cairo')
     scheduler.add_job(send_daily_reminders, 'cron', hour=9, minute=0, id='daily_reminders')
     scheduler.start()
@@ -614,9 +623,16 @@ def admin_invoice_email(invoice_id):
                            msg=f'📧 فاتورة #{invoice_id}: {"✅ " + msg if ok else "❌ " + msg}')
 
 # ====================== فاتورة PDF ======================
-from fpdf import FPDF
-import arabic_reshaper
-from bidi.algorithm import get_display
+try:
+    from fpdf import FPDF  # type: ignore[import-not-found]
+    import arabic_reshaper  # type: ignore[import-not-found]
+    from bidi.algorithm import get_display  # type: ignore[import-not-found]
+except ImportError:
+    FPDF = None
+    arabic_reshaper = None
+
+    def get_display(value):
+        return value
 
 def find_arabic_font():
     bundled = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'fonts', 'Amiri-Regular.ttf')
@@ -627,8 +643,10 @@ def find_arabic_font():
             return candidate
     return None
 
-class InvoicePDF(FPDF):
+class InvoicePDF(FPDF if FPDF else object):
     def add_arabic_font(self):
+        if FPDF is None:
+            return False
         font_path = find_arabic_font()
         if font_path:
             self.add_font('Arabic', '', font_path, uni=True)
