@@ -420,10 +420,19 @@ def admin_settings_test():
     test_email = request.form.get('test_email', '').strip()
     if not test_email:
         return redirect('/admin/settings')
-    ok, msg = send_email(test_email, f'🔧 بريد تجريبي - {get_clinic_name()}',
-                         '<html dir="rtl" lang="ar"><head><meta charset="UTF-8"><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700;800&display=swap" rel="stylesheet"><style>body{font-family:\'Cairo\',sans-serif;background:linear-gradient(160deg,#f0fdf4,#ffffff);display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;}h3{color:#0d9488;}p{color:#64748b;font-weight:600;}</style></head><body><div style="background:#fff;border:2px solid #f0fdf4;border-radius:28px;box-shadow:0 20px 50px -12px rgba(20,184,166,.18);padding:40px;text-align:center;"><h3>✅ تم إرسال هذا البريد التجريبي بنجاح</h3><p>إعدادات البريد تعمل بشكل صحيح.</p></div></body></html>')
+    try:
+        ok, msg = send_email(test_email, f'بريد تجريبي - {get_clinic_name()}',
+                             '<html dir="rtl" lang="ar"><head><meta charset="UTF-8"><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700;800&display=swap" rel="stylesheet"><style>body{font-family:\'Cairo\',sans-serif;background:linear-gradient(160deg,#f0fdf4,#ffffff);display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;}h3{color:#0d9488;}p{color:#64748b;font-weight:600;}</style></head><body><div style="background:#fff;border:2px solid #f0fdf4;border-radius:28px;box-shadow:0 20px 50px -12px rgba(20,184,166,.18);padding:40px;text-align:center;"><h3>تم إرسال هذا البريد التجريبي بنجاح</h3><p>إعدادات البريد تعمل بشكل صحيح.</p></div></body></html>')
+    except Exception as e:
+        ok, msg = False, str(e)
+
+    if ok:
+        result_message = 'تم إرسال البريد التجريبي بنجاح'
+    else:
+        clean_error = str(msg).encode('utf-8', 'ignore').decode('utf-8')
+        result_message = f'فشل إرسال البريد التجريبي - {clean_error}'
     return render_template('admin_settings.html', settings=get_settings(),
-                           msg=f'📧 بريد تجريبي: {"✅ " + msg if ok else "❌ " + msg}')
+                           msg=result_message)
 
 # ====================== التذكيرات ======================
 @app.route('/admin/remind/<int:appointment_id>')
@@ -447,7 +456,7 @@ def admin_remind(appointment_id):
                                msg='⚠️ هذا المريض لا يمتلك بريداً إلكترونياً')
     ok, msg = send_reminder(name, email, date, time, booking_type)
     return render_template('admin_settings.html', settings=get_settings(),
-                           msg=f'📧 تذكير: {"✅ " + msg if ok else "❌ " + msg}')
+                           msg=f'تذكير: {"تم بنجاح: " + msg if ok else "فشل: " + msg}')
 
 def send_daily_reminders():
     if not smtp_configured():
@@ -620,7 +629,7 @@ def admin_invoice_email(invoice_id):
     pdf_path = generate_invoice_pdf(invoice_id)
     ok, msg = send_invoice(name, email, invoice_id, appointment_date or '—', pdf_path)
     return render_template('admin_settings.html', settings=get_settings(),
-                           msg=f'📧 فاتورة #{invoice_id}: {"✅ " + msg if ok else "❌ " + msg}')
+                           msg=f'فاتورة رقم #{invoice_id}: {"تم الإرسال بنجاح: " + msg if ok else "فشل الإرسال: " + msg}')
 
 # ====================== فاتورة PDF ======================
 try:
