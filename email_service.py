@@ -1,5 +1,6 @@
 import smtplib
 import db
+from email.header import Header
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.application import MIMEApplication
@@ -58,9 +59,9 @@ def send_email(to_email, subject, html_body, attachment_path=None):
         return False, 'إعدادات SMTP غير مضبوطة'
 
     msg = MIMEMultipart('alternative')
-    msg['From'] = formataddr((CLINIC_NAME, smtp_email))
+    msg['From'] = formataddr((CLINIC_NAME, smtp_email), charset='utf-8')
     msg['To'] = to_email
-    msg['Subject'] = subject
+    msg['Subject'] = Header(subject, 'utf-8')
     msg.attach(MIMEText(html_body, 'html', 'utf-8'))
 
     if attachment_path and os.path.exists(attachment_path):
