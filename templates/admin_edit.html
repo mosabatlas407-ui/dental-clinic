@@ -1,7 +1,7 @@
 {% extends "admin_base.html" %}
 {% block title %}تعديل الموعد #{{ appointment_id }}{% endblock %}
 {% block content %}
-<h1 class="page-title">✏️ تعديل الموعد #{{ appointment_id }}</h1>
+<h1 class="page-title"> تعديل الموعد #{{ appointment_id }}</h1>
 <div class="card card-narrow">
   <form method="post">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -9,7 +9,7 @@
     <input type="date" name="new_date" value="{{ current_date }}" required>
     <label>الوقت الحالي: <strong style="color:var(--teal-dark);">{{ current_time }}</strong></label>
     <input type="time" name="new_time" value="{{ current_time }}" required>
-    <button type="submit" class="btn" style="margin-top:22px;">💾 حفظ التعديل</button>
+    <button type="submit" class="btn" style="margin-top:22px;"> حفظ التعديل</button>
     <a href="/admin/dashboard" class="btn" style="margin-top:12px; background:#fff; color:var(--teal-dark); border:2px solid var(--border-color); box-shadow:none;">إلغاء</a>
   </form>
 </div>

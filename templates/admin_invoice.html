@@ -1,15 +1,15 @@
 {% extends "admin_base.html" %}
 {% block title %}فاتورة #{{ inv[0] }} - {{ clinic.name }}{% endblock %}
 {% block content %}
-<h1 class="page-title">🧾 فاتورة رقم #{{ inv[0] }}</h1>
+<h1 class="page-title"> فاتورة رقم #{{ inv[0] }}</h1>
 <p class="page-sub">{{ clinic.name }}</p>
 
 <div class="card" style="max-width:760px;">
   <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:20px;">
-    <div style="background:var(--bg-mint-light); padding:10px 16px; border-radius:14px; font-weight:700;">👤 {{ inv[1] }}</div>
-    <div style="background:var(--bg-mint-light); padding:10px 16px; border-radius:14px; font-weight:700;">📧 <span style="direction:ltr; display:inline-block;">{{ inv[2] }}</span></div>
-    <div style="background:var(--bg-mint-light); padding:10px 16px; border-radius:14px; font-weight:700;">📅 الإصدار: {{ inv[3] }}</div>
-    <div style="background:var(--bg-mint-light); padding:10px 16px; border-radius:14px; font-weight:700;">📆 الموعد: #{{ inv[6] or '—' }}</div>
+    <div style="background:var(--bg-mint-light); padding:10px 16px; border-radius:14px; font-weight:700;"> {{ inv[1] }}</div>
+    <div style="background:var(--bg-mint-light); padding:10px 16px; border-radius:14px; font-weight:700;"> <span style="direction:ltr; display:inline-block;">{{ inv[2] }}</span></div>
+    <div style="background:var(--bg-mint-light); padding:10px 16px; border-radius:14px; font-weight:700;"> الإصدار: {{ inv[3] }}</div>
+    <div style="background:var(--bg-mint-light); padding:10px 16px; border-radius:14px; font-weight:700;"> الموعد: #{{ inv[6] or '—' }}</div>
   </div>
 
   <div class="table-wrap">
@@ -38,7 +38,7 @@
 
   <div style="text-align:center; margin:12px 0;">
     {% if inv[5] == 'مدفوعة' %}
-      <span class="badge badge-paid" style="font-size:1rem;">مدفوعة ✅</span>
+      <span class="badge badge-paid" style="font-size:1rem;">مدفوعة </span>
     {% else %}
       <span class="badge badge-unpaid" style="font-size:1rem;">غير مدفوعة</span>
     {% endif %}
@@ -49,17 +49,17 @@
     <input type="hidden" name="action" value="add_item">
     <input type="text" name="description" placeholder="اسم الخدمة" required style="width:200px; display:inline-block; margin:4px;">
     <input type="number" name="price" placeholder="السعر (ج.م)" min="0" step="0.01" required style="width:140px; display:inline-block; margin:4px;">
-    <button type="submit" class="btn btn-green" style="width:auto; padding:12px 18px; display:inline-block; margin:4px;">➕ إضافة خدمة</button>
+    <button type="submit" class="btn btn-green" style="width:auto; padding:12px 18px; display:inline-block; margin:4px;"> إضافة خدمة</button>
   </form>
 
   <div style="text-align:center; margin-top:16px;">
     <form action="/admin/invoices/{{ inv[0] }}" method="post" style="display:inline;">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <input type="hidden" name="action" value="toggle_status">
-      <button type="submit" class="btn btn-amber" style="width:auto; padding:10px 18px; display:inline-block; margin:5px;">{% if inv[5] == 'مدفوعة' %}↩️ إلغاء الدفع{% else %}💵 تأكيد الدفع{% endif %}</button>
+      <button type="submit" class="btn btn-amber" style="width:auto; padding:10px 18px; display:inline-block; margin:5px;">{% if inv[5] == 'مدفوعة' %}↩ إلغاء الدفع{% else %}💵 تأكيد الدفع{% endif %}</button>
     </form>
-    <a href="/admin/invoices/{{ inv[0] }}/pdf" class="btn btn-green" style="width:auto; padding:10px 18px; display:inline-block; margin:5px;">📄 طباعة PDF</a>
-    <a href="/admin/invoices/{{ inv[0] }}/email" class="btn btn-blue" style="width:auto; padding:10px 18px; display:inline-block; margin:5px;">📧 إرسال للمريض</a>
+    <a href="/admin/invoices/{{ inv[0] }}/pdf" class="btn btn-green" style="width:auto; padding:10px 18px; display:inline-block; margin:5px;"> طباعة PDF</a>
+    <a href="/admin/invoices/{{ inv[0] }}/email" class="btn btn-blue" style="width:auto; padding:10px 18px; display:inline-block; margin:5px;"> إرسال للمريض</a>
     <a href="/admin/invoices/{{ inv[0] }}/delete" class="btn btn-red" style="width:auto; padding:10px 18px; display:inline-block; margin:5px;" onclick="return confirm('حذف الفاتورة نهائياً؟')">🗑️ حذف</a>
   </div>
 

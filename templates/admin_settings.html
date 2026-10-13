@@ -1,13 +1,13 @@
 {% extends "admin_base.html" %}
 {% block title %}الإعدادات - {{ clinic.name }}{% endblock %}
 {% block content %}
-<h1 class="page-title">⚙️ إعدادات النظام</h1>
+<h1 class="page-title"> إعدادات النظام</h1>
 <p class="page-sub">بيانات العيادة تظهر في الموقع ورسائل المرضى وملفات PDF — عدل واضغط حفظ</p>
 
 {% if msg %}<div class="msg">{{ msg }}</div>{% endif %}
 
 <div class="card card-narrow">
-  <h3>🏥 بيانات العيادة</h3>
+  <h3> بيانات العيادة</h3>
   <form action="/admin/settings" method="post">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <label>اسم العيادة:</label>
@@ -22,16 +22,16 @@
     <input type="url" name="instagram" class="ltr" value="{{ settings.get('instagram','') }}">
     <label>بريد العيادة (للعرض والتواصل):</label>
     <input type="email" name="clinic_email" class="ltr" value="{{ settings.get('clinic_email','') }}">
-    <button type="submit" class="btn" style="margin-top:20px;">💾 حفظ بيانات العيادة</button>
+    <button type="submit" class="btn" style="margin-top:20px;"> حفظ بيانات العيادة</button>
   </form>
 </div>
 
 <div class="card card-narrow">
   <h3>📧 بريد الإرسال (SMTP)</h3>
   {% if settings.get('smtp_email') and settings.get('smtp_password') %}
-    <p class="status ok">✅ الإرسال مفعّل عبر: {{ settings.get('smtp_email') }}</p>
+    <p class="status ok"> الإرسال مفعّل عبر: {{ settings.get('smtp_email') }}</p>
   {% else %}
-    <p class="status no">⚠️ البريد غير مضبوط — التذكيرات التلقائية متوقفة</p>
+    <p class="status no"> البريد غير مضبوط — التذكيرات التلقائية متوقفة</p>
   {% endif %}
   <form action="/admin/settings" method="post">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -40,7 +40,7 @@
     <label>كلمة مرور البريد / مفتاح التطبيق:</label>
     <input type="password" name="smtp_password" value="{{ settings.get('smtp_password','') }}" placeholder="16 حرفاً لجوجل">
     <details style="margin-top:12px;">
-      <summary style="cursor:pointer;color:var(--teal-dark);font-weight:800;">⚙️ مزود بريد بديل (اختياري — سيبه فاضي لو بتستخدم Gmail)</summary>
+      <summary style="cursor:pointer;color:var(--teal-dark);font-weight:800;"> مزود بريد بديل (اختياري — سيبه فاضي لو بتستخدم Gmail)</summary>
       <label>اسم دخول SMTP (لو مختلف عن بريد المرسل):</label>
       <input type="text" name="smtp_login" class="ltr" value="{{ settings.get('smtp_login','') }}" placeholder="مثال: b6dfda001@smtp-brevo.com">
       <label>سيرفر SMTP:</label>
@@ -50,11 +50,11 @@
       <label>نوع التشفير:</label>
       <input type="text" name="smtp_secure" class="ltr" value="{{ settings.get('smtp_secure','') }}" placeholder="ssl أو tls">
     </details>
-    <button type="submit" class="btn" style="margin-top:20px;">💾 حفظ بيانات البريد</button>
+    <button type="submit" class="btn" style="margin-top:20px;"> حفظ بيانات البريد</button>
   </form>
   <div class="hint">
-    🔑 Gmail: من <a href="https://myaccount.google.com/apppasswords" target="_blank">myaccount.google.com/apppasswords</a><br>
-    📮 Brevo (بديل أسهل): سجل في <a href="https://app.brevo.com" target="_blank">app.brevo.com</a> ← SMTP & API ← خد السيرفر والبورت والمفتاح وحطهم هنا
+     Gmail: من <a href="https://myaccount.google.com/apppasswords" target="_blank">myaccount.google.com/apppasswords</a><br>
+     Brevo (بديل أسهل): سجل في <a href="https://app.brevo.com" target="_blank">app.brevo.com</a> ← SMTP & API ← خد السيرفر والبورت والمفتاح وحطهم هنا
   </div>
   <form action="/admin/settings/test" method="post" style="margin-top:16px;">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -65,7 +65,7 @@
 </div>
 
 <div class="card card-narrow">
-  <h3>🔑 تغيير كلمة مرور اللوحة</h3>
+  <h3> تغيير كلمة مرور اللوحة</h3>
   <form action="/admin/change_password" method="post">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <label>كلمة المرور الحالية:</label>
