@@ -52,55 +52,63 @@ def smtp_connection(settings):
     return smtplib.SMTP_SSL(host, port, timeout=30)
 
 def send_email(to_email, subject, html_body, attachment_path=None):
-    settings = get_settings()
-    smtp_email = settings.get('smtp_email')
-    smtp_password = settings.get('smtp_password')
-    if not smtp_email or not smtp_password:
-        return False, 'إعدادات SMTP غير مضبوطة'
-
-    msg = MIMEMultipart('alternative')
-    msg['From'] = formataddr((CLINIC_NAME, smtp_email), charset='utf-8')
-    msg['To'] = to_email
-    msg['Subject'] = Header(subject, 'utf-8')
-    msg.attach(MIMEText(html_body, 'html', 'utf-8'))
-
-    if attachment_path and os.path.exists(attachment_path):
-        with open(attachment_path, 'rb') as f:
-            part = MIMEApplication(f.read(), _subtype='pdf')
-            part.add_header('Content-Disposition', 'attachment', filename=os.path.basename(attachment_path))
-            msg.attach(part)
-
+    server = None
     try:
+        settings = get_settings()
+        smtp_email = settings.get('smtp_email')
+        smtp_password = settings.get('smtp_password')
+        if not smtp_email or not smtp_password:
+            return False, 'إعدادات SMTP غير مضبوطة'
+
+        msg = MIMEMultipart('alternative')
+        msg['From'] = formataddr((CLINIC_NAME, smtp_email), charset='utf-8')
+        msg['To'] = Header(str(to_email), 'utf-8')
+        msg['Subject'] = Header(str(subject), 'utf-8')
+        msg.attach(MIMEText(str(html_body), 'html', 'utf-8'))
+
+        if attachment_path and os.path.exists(attachment_path):
+            with open(attachment_path, 'rb') as attachment_file:
+                part = MIMEApplication(attachment_file.read(), _subtype='pdf')
+                part.add_header(
+                    'Content-Disposition', 'attachment',
+                    filename=('utf-8', '', os.path.basename(attachment_path)))
+                msg.attach(part)
+
         server = smtp_connection(settings)
         login_user = settings.get('smtp_login') or smtp_email
         server.login(login_user, smtp_password)
         server.sendmail(smtp_email, [to_email], msg.as_string())
-        server.quit()
         return True, 'تم الإرسال بنجاح'
     except Exception as e:
         return False, f'فشل الإرسال: {str(e)}'
+    finally:
+        if server:
+            try:
+                server.quit()
+            except Exception:
+                pass
 
 def send_booking_confirmation(patient_name, to_email, appointment_date, appointment_time):
     html = f'''
     <html dir="rtl"><body style="font-family:'Segoe UI',Tahoma;background:#f0f4f8;padding:30px;">
     <div style="max-width:500px;margin:auto;background:white;border-radius:15px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.15);">
         <div style="background:linear-gradient(90deg,#0077b6,#00b4d8);color:white;text-align:center;padding:20px;">
-            <h2 style="margin:0;">🦷 {CLINIC_NAME}</h2>
+            <h2 style="margin:0;">{CLINIC_NAME}</h2>
             <p style="margin:5px 0 0;">تأكيد حجز موعد</p>
         </div>
         <div style="padding:25px;line-height:2;color:#333;">
             <p>أهلاً <strong>{patient_name}</strong>،</p>
-            <p>تم حجز موعدك بنجاح ✅</p>
+            <p>تم حجز موعدك بنجاح.</p>
             <p style="background:#e8f6ff;padding:12px;border-radius:8px;text-align:center;">
-                📅 التاريخ: <strong>{appointment_date}</strong><br>
-                ⏰ الوقت: <strong>{appointment_time}</strong>
+                التاريخ: <strong>{appointment_date}</strong><br>
+                الوقت: <strong>{appointment_time}</strong>
             </p>
             <p>نرجو الحضور قبل الموعد بـ 10 دقائق. في حال رغبت بتغيير الموعد يرجى الاتصال بالعيادة.</p>
         </div>
     </div>
     </body></html>
     '''
-    return send_email(to_email, f'✅ تأكيد حجز موعد - {CLINIC_NAME}', html)
+    return send_email(to_email, f'تأكيد حجز موعد - {CLINIC_NAME}', html)
 
 def send_reminder(patient_name, to_email, appointment_date, appointment_time, booking_type):
     type_ar = {'consultation': 'استشارة', 'urgent': 'حجز مستعجل', 'surgery': 'عملية'}.get(booking_type, booking_type)
@@ -108,39 +116,39 @@ def send_reminder(patient_name, to_email, appointment_date, appointment_time, bo
     <html dir="rtl"><body style="font-family:'Segoe UI',Tahoma;background:#f0f4f8;padding:30px;">
     <div style="max-width:500px;margin:auto;background:white;border-radius:15px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.15);">
         <div style="background:linear-gradient(90deg,#2a9d8f,#264653);color:white;text-align:center;padding:20px;">
-            <h2 style="margin:0;">⏰ تذكير بموعدك</h2>
+            <h2 style="margin:0;">تذكير بموعدك</h2>
             <p style="margin:5px 0 0;">{CLINIC_NAME}</p>
         </div>
         <div style="padding:25px;line-height:2;color:#333;">
             <p>أهلاً <strong>{patient_name}</strong>،</p>
             <p>نذكّرك بموعدك غداً في العيادة:</p>
             <p style="background:#f0f9f0;padding:12px;border-radius:8px;text-align:center;">
-                🩺 نوع الزيارة: <strong>{type_ar}</strong><br>
-                📅 التاريخ: <strong>{appointment_date}</strong><br>
-                ⏰ الوقت: <strong>{appointment_time}</strong>
+                نوع الزيارة: <strong>{type_ar}</strong><br>
+                التاريخ: <strong>{appointment_date}</strong><br>
+                الوقت: <strong>{appointment_time}</strong>
             </p>
-            <p>للاستفسار أو التعديل، يرجى التواصل مع العيادة. ننتظرك! 😊</p>
+            <p>للاستفسار أو التعديل، يرجى التواصل مع العيادة. ننتظرك.</p>
         </div>
     </div>
     </body></html>
     '''
-    return send_email(to_email, f'⏰ تذكير بموعدك غداً - {CLINIC_NAME}', html)
+    return send_email(to_email, f'تذكير بموعدك غداً - {CLINIC_NAME}', html)
 
 def send_invoice(patient_name, to_email, invoice_id, appointment_date, pdf_path=None):
     html = f'''
     <html dir="rtl"><body style="font-family:'Segoe UI',Tahoma;background:#f0f4f8;padding:30px;">
     <div style="max-width:500px;margin:auto;background:white;border-radius:15px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.15);">
         <div style="background:linear-gradient(90deg,#e76f51,#f4a261);color:white;text-align:center;padding:20px;">
-            <h2 style="margin:0;">🧾 فاتورة علاج</h2>
+            <h2 style="margin:0;">فاتورة علاج</h2>
             <p style="margin:5px 0 0;">{CLINIC_NAME}</p>
         </div>
         <div style="padding:25px;line-height:2;color:#333;">
             <p>أهلاً <strong>{patient_name}</strong>،</p>
             <p>فاتورتك رقم <strong>#{invoice_id}</strong> للزيارة بتاريخ <strong>{appointment_date}</strong> جاهزة.</p>
             <p>الفاتورة مرفقة بهذا البريد بصيغة PDF.</p>
-            <p>شكراً لثقتكم بعيادتنا 🙏</p>
+            <p>شكراً لثقتكم بعيادتنا.</p>
         </div>
     </div>
     </body></html>
     '''
-    return send_email(to_email, f'🧾 فاتورتك رقم #{invoice_id} - {CLINIC_NAME}', html, attachment_path=pdf_path)
+    return send_email(to_email, f'فاتورتك رقم #{invoice_id} - {CLINIC_NAME}', html, attachment_path=pdf_path)

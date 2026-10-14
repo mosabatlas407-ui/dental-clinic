@@ -144,7 +144,7 @@ def handle_csrf_error(e):
         a{{display:inline-block;margin-top:15px;color:#14b8a6;text-decoration:none;font-weight:bold;}}
     </style></head>
     <body><div class="box">
-        <h3>⚠️ انتهت صلاحية الجلسة</h3>
+        <h3>تنبيه: انتهت صلاحية الجلسة</h3>
         <p>لم يتم التحقق من التوكن بنجاح. يرجى العودة وإعادة تحديث الصفحة ثم المحاولة مجدداً.</p>
         <a href="javascript:history.back()">← العودة للصفحة السابقة</a>
     </div></body></html>
@@ -218,7 +218,7 @@ def book():
     </style></head>
     <body>
         <div class="card">
-            <div class="badge">✨</div>
+            <div class="badge">تم</div>
             <h2>تم حجز الموعد بنجاح!</h2>
             <p class="sub">{clinic['name']} — سعداء باختيارك لنا</p>
             <div class="details">
@@ -228,9 +228,9 @@ def book():
                 <p><strong>التاريخ:</strong> {appointment_date}</p>
                 <p><strong>الوقت:</strong> {appointment_time}</p>
             </div>
-            <a href="/book?type={booking_type}" class="btn">📅 حجز موعد آخر</a>
+            <a href="/book?type={booking_type}" class="btn">حجز موعد آخر</a>
             <br>
-            <a href="/" class="home">🏠 العودة للرئيسية</a>
+            <a href="/" class="home">العودة للرئيسية</a>
         </div>
     </body>
     </html>
@@ -341,7 +341,7 @@ def admin_prices():
                 db.set_setting(c, key, val)
         conn.commit()
         conn.close()
-        msg = '✅ تم حفظ الأسعار'
+        msg = 'تم حفظ الأسعار بنجاح'
     prices = {k: get_price(k) for k in DEFAULT_PRICES}
     return render_template('admin_prices.html', prices=prices, msg=msg)
 
@@ -365,7 +365,7 @@ def admin_settings():
         conn.commit()
         conn.close()
         refresh_clinic_name()
-        msg = '✅ تم حفظ الإعدادات'
+        msg = 'تم حفظ الإعدادات بنجاح'
     settings = get_settings()
     return render_template('admin_settings.html', settings=settings, msg=msg)
 
@@ -377,18 +377,18 @@ def admin_change_password():
     new = request.form.get('new_password', '')
     confirm = request.form.get('confirm_password', '')
     if not verify_admin_password(current):
-        msg = '❌ كلمة المرور الحالية غير صحيحة'
+        msg = 'خطأ: كلمة المرور الحالية غير صحيحة'
     elif len(new) < 6:
-        msg = '❌ كلمة المرور الجديدة قصيرة جداً (6 أحرف على الأقل)'
+        msg = 'خطأ: كلمة المرور الجديدة قصيرة جداً (6 أحرف على الأقل)'
     elif new != confirm:
-        msg = '❌ كلمتا المرور غير متطابقتين'
+        msg = 'خطأ: كلمتا المرور غير متطابقتين'
     else:
         conn = db.connect()
         c = conn.cursor()
         db.set_setting(c, 'admin_password_hash', hash_password(new))
         conn.commit()
         conn.close()
-        msg = '✅ تم تغيير كلمة المرور بنجاح'
+        msg = 'تم تغيير كلمة المرور بنجاح'
     return render_template('admin_settings.html', settings=get_settings(), msg=msg)
 
 @app.route('/admin/envcheck')
@@ -397,17 +397,17 @@ def admin_envcheck():
         return redirect('/admin/login')
     raw = os.environ.get('DATABASE_URL', '')
     info = (
-        f"متغير DATABASE_URL موجود: {'نعم' if raw else 'لا ❌'}<br>"
+        f"متغير DATABASE_URL موجود: {'نعم' if raw else 'لا'}<br>"
         f"طول النص: {len(raw)} حرف<br>"
         f"أول 15 حرف: <code>{raw[:15]}</code><br>"
         f"آخر 15 حرف: <code>{raw[-15:] if len(raw) >= 30 else ''}</code><br>"
         f"عدد علامات @: {raw.count('@')}<br>"
-        f"المحرك الفعلي المستخدم: {'PostgreSQL ✅' if db.IS_PG else 'SQLite مؤقت ❌'}"
+        f"المحرك الفعلي المستخدم: {'PostgreSQL' if db.IS_PG else 'SQLite مؤقت'}"
     )
     return f'''
     <html dir="rtl" lang="ar"><body style="font-family:'Segoe UI';padding:30px;background:#f0f4f8;">
     <div style="max-width:600px;margin:auto;background:white;padding:25px;border-radius:12px;">
-        <h3 style="color:#0077b6;">🔍 فحص قاعدة البيانات</h3>
+        <h3 style="color:#0077b6;">فحص قاعدة البيانات</h3>
         <p style="line-height:2;">{info}</p>
         <a href="/admin/settings">← رجوع للإعدادات</a>
     </div></body></html>
@@ -453,7 +453,7 @@ def admin_remind(appointment_id):
     name, email, date, time, booking_type = row
     if not email:
         return render_template('admin_settings.html', settings=get_settings(),
-                               msg='⚠️ هذا المريض لا يمتلك بريداً إلكترونياً')
+                               msg=' هذا المريض لا يمتلك بريداً إلكترونياً')
     ok, msg = send_reminder(name, email, date, time, booking_type)
     return render_template('admin_settings.html', settings=get_settings(),
                            msg=f'تذكير: {"تم بنجاح: " + msg if ok else "فشل: " + msg}')
@@ -625,7 +625,7 @@ def admin_invoice_email(invoice_id):
     name, email, appointment_date = row
     if not email:
         return render_template('admin_settings.html', settings=get_settings(),
-                               msg='⚠️ هذا المريض لا يمتلك بريداً إلكترونياً')
+                               msg='تنبيه: هذا المريض لا يمتلك بريداً إلكترونياً')
     pdf_path = generate_invoice_pdf(invoice_id)
     ok, msg = send_invoice(name, email, invoice_id, appointment_date or '—', pdf_path)
     return render_template('admin_settings.html', settings=get_settings(),
@@ -743,7 +743,7 @@ def admin_invoice_pdf(invoice_id):
         p {{ color:#64748b; font-weight:600; }}
         a {{ display:inline-block; margin-top:18px; padding:12px 26px; background:#14b8a6; color:#fff; text-decoration:none; border-radius:9999px; font-weight:800; }}
     </style></head>
-    <body><div class="card"><h2>✅ تم إنشاء ملف الفاتورة بنجاح</h2>
+    <body><div class="card"><h2>تم إنشاء ملف الفاتورة بنجاح</h2>
     <p>الملف: {pdf_path}</p>
     <a href="/admin/invoices/{invoice_id}">العودة للفاتورة</a></div></body></html>
     '''
@@ -836,7 +836,7 @@ def admin_pdf():
         p {{ color:#64748b; font-weight:600; }}
         a {{ display:inline-block; margin-top:18px; padding:12px 26px; background:#14b8a6; color:#fff; text-decoration:none; border-radius:9999px; font-weight:800; }}
     </style></head>
-    <body><div class="card"><h2>✅ تم إنشاء ملف PDF بنجاح</h2>
+    <body><div class="card"><h2>تم إنشاء ملف PDF بنجاح</h2>
     <p>الملف: {filename}</p>
     <a href="/admin/dashboard">العودة للوحة التحكم</a></div></body></html>
     '''
