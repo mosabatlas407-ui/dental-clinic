@@ -85,6 +85,67 @@
       outline: none;
       box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.12);
     }
+    .select-field {
+      position: relative;
+      border-radius: 14px;
+      transition: transform 0.22s ease;
+    }
+    .select-field::after {
+      content: "";
+      position: absolute;
+      left: 18px;
+      top: 50%;
+      width: 9px;
+      height: 9px;
+      border-left: 2px solid var(--text-muted);
+      border-bottom: 2px solid var(--text-muted);
+      transform: translateY(-70%) rotate(-45deg);
+      pointer-events: none;
+      transition: transform 0.22s ease, border-color 0.22s ease;
+    }
+    .select-field:hover,
+    .select-field:focus-within { transform: translateY(-2px); }
+    .select-field:hover::after,
+    .select-field:focus-within::after {
+      border-color: var(--teal-dark);
+      transform: translateY(-35%) rotate(-45deg);
+    }
+    .select-control {
+      appearance: none;
+      min-height: 54px;
+      padding-inline: 50px 48px;
+      cursor: pointer;
+      transition: border-color 0.22s ease, box-shadow 0.22s ease, background-color 0.22s ease;
+    }
+    .select-field:hover .select-control {
+      border-color: #99e6dc;
+      background-color: #fbfffe;
+    }
+    .select-control:focus-visible {
+      border-color: var(--teal-primary);
+      box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.14);
+    }
+    .select-tooth {
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      width: 20px;
+      height: 20px;
+      color: var(--teal-dark);
+      pointer-events: none;
+      transform: translateY(-50%);
+      transition: color 0.22s ease;
+    }
+    .select-field:focus-within .select-tooth { animation: tooth-nod 0.48s ease; color: var(--teal-primary); }
+    @keyframes tooth-nod {
+      0%, 100% { transform: translateY(-50%) rotate(0); }
+      38% { transform: translateY(-50%) rotate(-10deg) scale(1.08); }
+      72% { transform: translateY(-50%) rotate(6deg); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .select-field, .select-field::after, .select-control, .select-tooth { transition: none; }
+      .select-field:focus-within .select-tooth { animation: none; }
+    }
     .btn {
       display: inline-flex; align-items: center; justify-content: center; gap: 10px;
       width: 100%;
@@ -147,12 +208,17 @@
       <input type="text" name="name" required placeholder="اكتب اسمك الثلاثي">
       <label>العمر:</label>
       <input type="number" name="age" min="1" max="120" required placeholder="مثال: 25">
-      <label>الجنس:</label>
-      <select name="gender" required>
-        <option value="">اختر...</option>
-        <option value="ذكر">ذكر</option>
-        <option value="أنثى">أنثى</option>
-      </select>
+      <label for="gender">الجنس:</label>
+      <div class="select-field">
+        <svg class="select-tooth" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 2.5c-2.45 0-3.35 1.55-5.08 1.55C4.67 4.05 3 6.08 3 9.18c0 2.64 1.12 5.56 2.55 8.22.85 1.58 1.85 3.1 2.8 3.1 1.34 0 1.17-4.17 3.65-4.17s2.32 4.17 3.66 4.17c.95 0 1.95-1.52 2.8-3.1C19.9 14.74 21 11.82 21 9.18c0-3.1-1.67-5.13-3.92-5.13C15.35 4.05 14.45 2.5 12 2.5Z"/>
+        </svg>
+        <select class="select-control" id="gender" name="gender" required>
+          <option value="">اختر...</option>
+          <option value="ذكر">ذكر</option>
+          <option value="أنثى">أنثى</option>
+        </select>
+      </div>
       <label>تشخيص الحالة:</label>
       <input type="text" name="address" required placeholder="اكتب وصفاً مختصراً للحالة (مثال: ألم في الضرس الخلفي)">
       <label>البريد الإلكتروني:</label>

@@ -112,12 +112,14 @@
       padding: 40px;
       display: flex; justify-content: center; align-items: center;
       min-height: 440px;
+      min-width: 0;
     }
-    .duotone-illustration { width: 280px; height: 280px; }
+    .duotone-illustration { width: min(280px, 100%); height: auto; aspect-ratio: 1; }
 
     /* Floating Booking Widget */
     .floating-widget {
       position: fixed; bottom: 32px; left: 32px;
+      max-width: calc(100vw - 32px);
       background: var(--bg-white);
       padding: 16px 24px;
       border-radius: var(--radius-pill);
@@ -131,9 +133,10 @@
       0%, 100% { transform: translateY(0); }
       50% { transform: translateY(-8px); }
     }
-    .widget-text { display: flex; flex-direction: column; }
+    .widget-text { display: flex; flex-direction: column; min-width: 0; flex: 1; }
     .widget-title { font-size: 0.95rem; font-weight: 800; color: var(--text-dark); }
     .widget-sub { font-size: 0.8rem; color: var(--teal-dark); font-weight: 700; }
+    .floating-widget > .btn { flex: 0 0 auto; white-space: nowrap; }
 
     /* Services Section */
     .section-title { text-align: center; max-width: 600px; margin: 0 auto 64px; }
@@ -170,7 +173,7 @@
     .btn-book-mini:hover { background: var(--teal-dark); transform: translateY(-2px); }
 
     /* About Section */
-    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; }
+    .about-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 60px; align-items: center; }
     .about-text h2 { font-size: 2.5rem; margin-bottom: 20px; }
     .about-text p { font-size: 1.1rem; margin-bottom: 24px; }
     .about-list { list-style: none; display: grid; gap: 16px; margin-bottom: 32px; }
@@ -233,18 +236,23 @@
 
     /* Responsive Design */
     @media (max-width: 992px) {
-      .hero, .about-grid { grid-template-columns: 1fr; text-align: center; }
+      .hero, .about-grid { grid-template-columns: minmax(0, 1fr); text-align: center; }
       .hero-text, .about-text p { margin: 0 auto 36px; }
       .hero-actions, .about-list, .branch-pills { justify-content: center; }
       .services-grid, .testimonial-grid { grid-template-columns: 1fr; }
-      .footer-grid { grid-template-columns: 1fr 1fr; }
-      .floating-widget { bottom: 16px; left: 16px; right: 16px; justify-content: space-between; }
+      .footer-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+      .floating-widget { position: static; width: max-content; max-width: calc(100vw - 32px); margin: 24px auto; justify-content: flex-start; padding: 12px 16px; gap: 12px; animation: none; }
       .nav-links { gap: 16px; }
     }
     @media (max-width: 560px) {
       .hero-title { font-size: 2.2rem; }
       .section { padding: 56px 0; }
-      .footer-grid { grid-template-columns: 1fr; }
+      .hero-visual { min-height: 0; padding: 24px; }
+      .footer-grid { grid-template-columns: minmax(0, 1fr); }
+      .widget-sub { overflow-wrap: anywhere; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .floating-widget { animation: none; }
     }
   </style>
 </head>
@@ -361,11 +369,9 @@
       <div class="hero-visual">
         <svg class="duotone-illustration" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
           <circle cx="100" cy="100" r="80" fill="#14B8A6" fill-opacity="0.12"/>
-          <rect x="60" y="65" width="52" height="70" rx="26" fill="#14B8A6" fill-opacity="0.25"/>
-          <rect x="88" y="65" width="52" height="70" rx="26" fill="#14B8A6"/>
-          <path d="M88 116c0-8 6-14 14-14s14 6 14 14" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round" fill="none"/>
-          <circle cx="96" cy="95" r="4" fill="#FFFFFF"/>
-          <circle cx="128" cy="95" r="4" fill="#FFFFFF"/>
+          <path d="M100 38c-13 0-21 7-31 7-19 0-31 15-31 35 0 25 14 54 31 72 8 8 16 9 21-1l7-20c1-4 2-7 3-7s2 3 3 7l7 20c5 10 13 9 21 1 17-18 31-47 31-72 0-20-12-35-31-35-10 0-18-7-31-7Z" fill="#FFFFFF" stroke="#0D9488" stroke-width="7" stroke-linejoin="round"/>
+          <path d="M70 66c7-7 16-10 26-10" stroke="#99E6DC" stroke-width="5" stroke-linecap="round"/>
+          <path d="M100 112v18" stroke="#CCFBF1" stroke-width="4" stroke-linecap="round"/>
         </svg>
       </div>
     </div>
