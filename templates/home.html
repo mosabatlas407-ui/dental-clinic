@@ -66,6 +66,32 @@
     .nav-links { display: flex; gap: 32px; list-style: none; align-items: center; flex-wrap: wrap; }
     .nav-links a { text-decoration: none; color: var(--text-dark); font-weight: 700; font-size: 1rem; transition: color 0.2s; }
     .nav-links a:hover { color: var(--teal-primary); }
+    .nav-dropdown { position: relative; }
+    .nav-dropdown summary {
+      display: flex; align-items: center; gap: 8px; cursor: pointer; list-style: none;
+      color: var(--text-dark); font-weight: 700; font-size: 1rem;
+    }
+    .nav-dropdown summary::-webkit-details-marker { display: none; }
+    .nav-dropdown summary::after {
+      content: ""; width: 7px; height: 7px; border-right: 2px solid currentColor;
+      border-bottom: 2px solid currentColor; transform: rotate(45deg) translateY(-2px);
+      transition: transform 0.2s ease;
+    }
+    .nav-dropdown[open] summary { color: var(--teal-dark); }
+    .nav-dropdown[open] summary::after { transform: rotate(225deg) translate(-2px, -1px); }
+    .nav-menu {
+      position: absolute; top: calc(100% + 14px); right: 0; z-index: 110;
+      display: grid; min-width: 210px; gap: 4px; padding: 8px;
+      background: #fff; border: 1px solid #d8eee9; border-radius: 12px;
+      box-shadow: 0 16px 32px rgba(15, 62, 74, 0.14);
+    }
+    .nav-dropdown[open] .nav-menu { animation: menu-enter 0.18s ease-out both; }
+    .nav-menu a { display: block; padding: 10px 12px; border-radius: 8px; white-space: nowrap; }
+    .nav-menu a:hover, .nav-menu a:focus-visible { background: #effaf7; }
+    @keyframes menu-enter {
+      from { opacity: 0; transform: translateY(-5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
 
     /* Buttons */
     .btn {
@@ -192,6 +218,17 @@
       padding: 10px 20px; font-weight: 800; font-size: 0.95rem;
     }
 
+    /* Illustrative treatment comparison */
+    .results-section { background: linear-gradient(135deg, #eff8fb 0%, #f1fbf7 100%); }
+    .results-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; max-width: 900px; margin: 0 auto; }
+    .result-panel { min-width: 0; overflow: hidden; background: #fff; border: 1px solid #dce9ed; border-radius: 16px; box-shadow: 0 12px 30px rgba(29, 78, 92, 0.08); }
+    .result-art { min-height: 220px; display: grid; place-items: center; padding: 24px; background: linear-gradient(145deg, #eaf6f8, #f4fbf8); }
+    .result-art svg { display: block; width: min(100%, 360px); height: auto; }
+    .result-caption { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 16px 20px; }
+    .result-caption h3 { font-size: 1.05rem; }
+    .result-label { padding: 4px 12px; border-radius: 999px; background: #e4f4f0; color: #17675d; font-weight: 800; font-size: 0.85rem; }
+    .results-note { margin: 20px auto 0; max-width: 600px; text-align: center; font-size: 0.9rem; }
+
     /* Testimonials */
     .testimonial-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
     .testimonial-card {
@@ -250,9 +287,14 @@
       .hero-visual { min-height: 0; padding: 24px; }
       .footer-grid { grid-template-columns: minmax(0, 1fr); }
       .widget-sub { overflow-wrap: anywhere; }
+      .nav-dropdown { position: static; }
+      .nav-menu { top: auto; right: 0; left: 0; margin-top: 8px; }
+      .results-grid { grid-template-columns: minmax(0, 1fr); }
+      .result-art { min-height: 190px; }
     }
     @media (prefers-reduced-motion: reduce) {
-      .floating-widget { animation: none; }
+      .floating-widget, .nav-dropdown[open] .nav-menu { animation: none; }
+      .nav-dropdown summary::after { transition: none; }
     }
   </style>
 </head>
@@ -268,7 +310,17 @@
           {{ clinic.name }}
         </a>
         <ul class="nav-links">
-          <li><a href="#services">الخدمات</a></li>
+          <li>
+            <details class="nav-dropdown">
+              <summary>الخدمات</summary>
+              <div class="nav-menu">
+                <a href="#services">كل الخدمات</a>
+                <a href="/book?type=consultation">استشارة وفحص</a>
+                <a href="/book?type=urgent">حجز مستعجل</a>
+                <a href="/book?type=surgery">جراحة وعلاج</a>
+              </div>
+            </details>
+          </li>
           <li><a href="#about">عن العيادة</a></li>
           <li><a href="#reviews">آراء المرضى</a></li>
           <li><a href="#contact">التواصل</a></li>
@@ -345,6 +397,42 @@
           </div>
         </div>
       </div>
+    </div>
+  </section>
+
+  <section class="section results-section" id="results">
+    <div class="container">
+      <div class="section-title">
+        <h2>عناية تصنع فرقاً</h2>
+        <p>تصور توضيحي لابتسامة قبل العناية وبعدها، مع خطة علاج تناسب كل حالة.</p>
+      </div>
+      <div class="results-grid">
+        <article class="result-panel">
+          <div class="result-art">
+            <svg viewBox="0 0 360 180" role="img" aria-label="رسم توضيحي لابتسامة قبل العناية">
+              <path d="M35 58Q180 157 325 58Q302 156 180 166Q58 156 35 58Z" fill="#bb6f68"/>
+              <path d="M48 67Q180 137 312 67L294 111Q180 145 66 111Z" fill="#fffaf1" stroke="#d5d8d1" stroke-width="3"/>
+              <path d="M84 78l35 14-8 34-28-9zM124 94l36 9-3 33-35-6zM165 103l34 0 2 33-35 0zM204 102l34-8 4 35-35 6zM243 92l34-14 7 39-29 9z" fill="#f0e1c7" stroke="#d0c3ad" stroke-width="2"/>
+              <path d="M93 92l10 3M219 106l10-2" stroke="#c58f63" stroke-width="5" stroke-linecap="round"/>
+              <path d="M55 62Q180 118 305 62" fill="none" stroke="#8d514e" stroke-width="5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="result-caption"><h3>قبل العناية</h3><span class="result-label">قبل</span></div>
+        </article>
+        <article class="result-panel">
+          <div class="result-art">
+            <svg viewBox="0 0 360 180" role="img" aria-label="رسم توضيحي لابتسامة بعد العناية">
+              <path d="M35 58Q180 157 325 58Q302 156 180 166Q58 156 35 58Z" fill="#c97d75"/>
+              <path d="M48 67Q180 137 312 67L294 111Q180 145 66 111Z" fill="#fff" stroke="#d9e6e3" stroke-width="3"/>
+              <path d="M82 78l37 14-7 34-30-9zM122 94l38 9-2 33-37-6zM164 103h36l2 33h-37zM204 102l36-8 4 35-37 6zM243 92l36-14 7 39-29 9z" fill="#fff" stroke="#dce7e4" stroke-width="2"/>
+              <path d="M55 62Q180 118 305 62" fill="none" stroke="#a45c59" stroke-width="5" stroke-linecap="round"/>
+              <path d="M74 50l5-8M286 50l-5-8" stroke="#6fb5a4" stroke-width="4" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="result-caption"><h3>بعد العناية</h3><span class="result-label">بعد</span></div>
+        </article>
+      </div>
+      <p class="results-note">رسوم توضيحية وليست صوراً لمرضى أو ضماناً لنتيجة علاجية محددة.</p>
     </div>
   </section>
 

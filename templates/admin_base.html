@@ -60,20 +60,45 @@
     }
     .logout:hover { background: #fef2f2; }
 
-    /* Tabs */
-    .tabs { background: var(--bg-white); border-bottom: 1px solid var(--border-color); padding: 14px 0; }
-    .tabs .inner { display: flex; gap: 10px; flex-wrap: wrap; }
-    .tabs a {
-      padding: 10px 20px;
-      border-radius: var(--radius-pill);
-      font-weight: 800; font-size: 0.95rem;
-      text-decoration: none; color: var(--text-muted);
-      background: var(--bg-mint-light);
-      border: 2px solid transparent;
-      transition: all 0.2s;
+    /* Admin navigation dropdown */
+    .tabs { background: var(--bg-white); border-bottom: 1px solid var(--border-color); padding: 12px 0; }
+    .tabs .inner { display: flex; align-items: center; }
+    .admin-menu { position: relative; }
+    .admin-menu summary {
+      display: inline-flex; align-items: center; gap: 12px; cursor: pointer; list-style: none;
+      padding: 10px 18px; border: 1px solid #cde9e3; border-radius: 10px;
+      color: var(--teal-dark); background: #f2fbf8; font-weight: 800;
     }
-    .tabs a:hover { color: var(--teal-dark); background: var(--teal-light); }
-    .tabs a.active { background: var(--teal-primary); color: #ffffff; box-shadow: 0 6px 14px rgba(20, 184, 166, 0.3); }
+    .admin-menu summary::-webkit-details-marker { display: none; }
+    .admin-menu summary::after {
+      content: ""; width: 7px; height: 7px; border-right: 2px solid currentColor;
+      border-bottom: 2px solid currentColor; transform: rotate(45deg) translateY(-2px);
+      transition: transform 0.2s ease;
+    }
+    .admin-menu[open] summary { background: var(--teal-light); }
+    .admin-menu[open] summary::after { transform: rotate(225deg) translate(-2px, -1px); }
+    .admin-menu-panel {
+      position: absolute; top: calc(100% + 8px); right: 0; z-index: 60;
+      display: grid; min-width: 240px; gap: 4px; padding: 8px;
+      background: #fff; border: 1px solid #d8eee9; border-radius: 12px;
+      box-shadow: 0 16px 32px rgba(15, 62, 74, 0.14);
+    }
+    .admin-menu[open] .admin-menu-panel { animation: admin-menu-enter 0.18s ease-out both; }
+    .admin-menu-panel a {
+      display: block; padding: 10px 12px; border-radius: 8px;
+      color: var(--text-muted); text-decoration: none; font-weight: 800;
+      transition: color 0.18s ease, background-color 0.18s ease;
+    }
+    .admin-menu-panel a:hover, .admin-menu-panel a:focus-visible { color: var(--teal-dark); background: var(--bg-mint-light); }
+    .admin-menu-panel a.active { color: var(--teal-dark); background: var(--teal-light); }
+    @keyframes admin-menu-enter {
+      from { opacity: 0; transform: translateY(-5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .admin-menu[open] .admin-menu-panel { animation: none; }
+      .admin-menu summary::after { transition: none; }
+    }
 
     /* Main */
     .admin-main { padding: 36px 24px 80px; }
@@ -212,11 +237,16 @@
 
   <nav class="tabs">
     <div class="container inner">
-      <a href="/admin/dashboard" class="{{ 'active' if request.path.startswith('/admin/dashboard') or request.path.startswith('/admin/edit') }}"> المواعيد</a>
-      <a href="/admin/invoices" class="{{ 'active' if request.path.startswith('/admin/invoices') }}"> الفواتير</a>
-      <a href="/admin/prices" class="{{ 'active' if request.path.startswith('/admin/prices') }}"> الأسعار</a>
-      <a href="/admin/settings" class="{{ 'active' if request.path.startswith('/admin/settings') }}"> الإعدادات</a>
-      <a href="/admin/pdf" class="{{ 'active' if request.path.startswith('/admin/pdf') }}"> PDF الأسبوعي</a>
+      <details class="admin-menu">
+        <summary>قائمة الإدارة</summary>
+        <div class="admin-menu-panel">
+          <a href="/admin/dashboard" class="{{ 'active' if request.path.startswith('/admin/dashboard') or request.path.startswith('/admin/edit') }}">المواعيد</a>
+          <a href="/admin/invoices" class="{{ 'active' if request.path.startswith('/admin/invoices') }}">الفواتير</a>
+          <a href="/admin/prices" class="{{ 'active' if request.path.startswith('/admin/prices') }}">الأسعار</a>
+          <a href="/admin/settings" class="{{ 'active' if request.path.startswith('/admin/settings') }}">الإعدادات</a>
+          <a href="/admin/pdf" class="{{ 'active' if request.path.startswith('/admin/pdf') }}">PDF الأسبوعي</a>
+        </div>
+      </details>
     </div>
   </nav>
 

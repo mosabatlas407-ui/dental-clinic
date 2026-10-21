@@ -125,6 +125,8 @@
       border-color: var(--teal-primary);
       box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.14);
     }
+    .service-select { border-color: #cfe6e2; background-color: #fbfefd; }
+    .service-select option { color: var(--text-dark); background: var(--bg-white); }
     .select-tooth {
       position: absolute;
       right: 16px;
@@ -203,7 +205,6 @@
     <div class="type-note">سيُحدد لك أقرب موعد متاح تلقائيًا (الأحد - الخميس)</div>
     <form action="/book" method="post">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <input type="hidden" name="booking_type" value="{{ booking_type }}">
       <label>الاسم الكامل:</label>
       <input type="text" name="name" required placeholder="اكتب اسمك الثلاثي">
       <label>العمر:</label>
@@ -217,6 +218,17 @@
           <option value="">اختر...</option>
           <option value="ذكر">ذكر</option>
           <option value="أنثى">أنثى</option>
+        </select>
+      </div>
+      <label for="booking_type">نوع الزيارة:</label>
+      <div class="select-field">
+        <svg class="select-tooth" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 2.5c-2.45 0-3.35 1.55-5.08 1.55C4.67 4.05 3 6.08 3 9.18c0 2.64 1.12 5.56 2.55 8.22.85 1.58 1.85 3.1 2.8 3.1 1.34 0 1.17-4.17 3.65-4.17s2.32 4.17 3.66 4.17c.95 0 1.95-1.52 2.8-3.1C19.9 14.74 21 11.82 21 9.18c0-3.1-1.67-5.13-3.92-5.13C15.35 4.05 14.45 2.5 12 2.5Z"/>
+        </svg>
+        <select class="select-control service-select" id="booking_type" name="booking_type" required>
+          <option value="consultation" {{ 'selected' if booking_type == 'consultation' }}>استشارة وفحص</option>
+          <option value="urgent" {{ 'selected' if booking_type == 'urgent' }}>حجز مستعجل</option>
+          <option value="surgery" {{ 'selected' if booking_type == 'surgery' }}>جراحة وعلاج</option>
         </select>
       </div>
       <label>تشخيص الحالة:</label>
