@@ -222,8 +222,8 @@
     .results-section { background: linear-gradient(135deg, #eff8fb 0%, #f1fbf7 100%); }
     .results-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; max-width: 900px; margin: 0 auto; }
     .result-panel { min-width: 0; overflow: hidden; background: #fff; border: 1px solid #dce9ed; border-radius: 16px; box-shadow: 0 12px 30px rgba(29, 78, 92, 0.08); }
-    .result-art { min-height: 220px; display: grid; place-items: center; padding: 24px; background: linear-gradient(145deg, #eaf6f8, #f4fbf8); }
-    .result-art svg { display: block; width: min(100%, 360px); height: auto; }
+    .result-art { aspect-ratio: 16 / 9; overflow: hidden; background: linear-gradient(145deg, #eaf6f8, #f4fbf8); }
+    .result-art img { display: block; width: 100%; height: 100%; object-fit: cover; border-radius: 12px 12px 0 0; }
     .result-caption { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 16px 20px; }
     .result-caption h3 { font-size: 1.05rem; }
     .result-label { padding: 4px 12px; border-radius: 999px; background: #e4f4f0; color: #17675d; font-weight: 800; font-size: 0.85rem; }
@@ -290,7 +290,6 @@
       .nav-dropdown { position: static; }
       .nav-menu { top: auto; right: 0; left: 0; margin-top: 8px; }
       .results-grid { grid-template-columns: minmax(0, 1fr); }
-      .result-art { min-height: 190px; }
     }
     @media (prefers-reduced-motion: reduce) {
       .floating-widget, .nav-dropdown[open] .nav-menu { animation: none; }
@@ -409,30 +408,18 @@
       <div class="results-grid">
         <article class="result-panel">
           <div class="result-art">
-            <svg viewBox="0 0 360 180" role="img" aria-label="رسم توضيحي لابتسامة قبل العناية">
-              <path d="M35 58Q180 157 325 58Q302 156 180 166Q58 156 35 58Z" fill="#bb6f68"/>
-              <path d="M48 67Q180 137 312 67L294 111Q180 145 66 111Z" fill="#fffaf1" stroke="#d5d8d1" stroke-width="3"/>
-              <path d="M84 78l35 14-8 34-28-9zM124 94l36 9-3 33-35-6zM165 103l34 0 2 33-35 0zM204 102l34-8 4 35-35 6zM243 92l34-14 7 39-29 9z" fill="#f0e1c7" stroke="#d0c3ad" stroke-width="2"/>
-              <path d="M93 92l10 3M219 106l10-2" stroke="#c58f63" stroke-width="5" stroke-linecap="round"/>
-              <path d="M55 62Q180 118 305 62" fill="none" stroke="#8d514e" stroke-width="5" stroke-linecap="round"/>
-            </svg>
+            <img src="{{ url_for('static', filename='images/dental-before.jpg') }}" alt="صورة توضيحية لأسنان قبل العناية" loading="lazy" decoding="async">
           </div>
           <div class="result-caption"><h3>قبل العناية</h3><span class="result-label">قبل</span></div>
         </article>
         <article class="result-panel">
           <div class="result-art">
-            <svg viewBox="0 0 360 180" role="img" aria-label="رسم توضيحي لابتسامة بعد العناية">
-              <path d="M35 58Q180 157 325 58Q302 156 180 166Q58 156 35 58Z" fill="#c97d75"/>
-              <path d="M48 67Q180 137 312 67L294 111Q180 145 66 111Z" fill="#fff" stroke="#d9e6e3" stroke-width="3"/>
-              <path d="M82 78l37 14-7 34-30-9zM122 94l38 9-2 33-37-6zM164 103h36l2 33h-37zM204 102l36-8 4 35-37 6zM243 92l36-14 7 39-29 9z" fill="#fff" stroke="#dce7e4" stroke-width="2"/>
-              <path d="M55 62Q180 118 305 62" fill="none" stroke="#a45c59" stroke-width="5" stroke-linecap="round"/>
-              <path d="M74 50l5-8M286 50l-5-8" stroke="#6fb5a4" stroke-width="4" stroke-linecap="round"/>
-            </svg>
+            <img src="{{ url_for('static', filename='images/dental-after.jpg') }}" alt="صورة توضيحية لابتسامة بعد العناية بالأسنان" loading="lazy" decoding="async">
           </div>
           <div class="result-caption"><h3>بعد العناية</h3><span class="result-label">بعد</span></div>
         </article>
       </div>
-      <p class="results-note">رسوم توضيحية وليست صوراً لمرضى أو ضماناً لنتيجة علاجية محددة.</p>
+      <p class="results-note">صور توضيحية لنماذج العلاج، ولا تمثل الحالة نفسها أو تضمن نتيجة علاجية محددة.</p>
     </div>
   </section>
 
