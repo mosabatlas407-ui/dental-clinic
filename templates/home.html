@@ -218,15 +218,20 @@
       padding: 10px 20px; font-weight: 800; font-size: 0.95rem;
     }
 
-    /* Illustrative treatment comparison */
+    /* Treatment journey timeline */
     .results-section { background: linear-gradient(135deg, #eff8fb 0%, #f1fbf7 100%); }
-    .results-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; max-width: 900px; margin: 0 auto; }
-    .result-panel { min-width: 0; overflow: hidden; background: #fff; border: 1px solid #dce9ed; border-radius: 16px; box-shadow: 0 12px 30px rgba(29, 78, 92, 0.08); }
+    .results-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; max-width: 1080px; margin: 0 auto; }
+    .result-panel { min-width: 0; overflow: hidden; background: #fff; border: 1px solid #dce9ed; border-radius: 16px; box-shadow: 0 12px 30px rgba(29, 78, 92, 0.08); transition: transform 0.24s ease, box-shadow 0.24s ease; }
+    .result-panel:hover { transform: translateY(-4px); box-shadow: 0 18px 36px rgba(29, 78, 92, 0.14); }
     .result-art { aspect-ratio: 16 / 9; overflow: hidden; background: linear-gradient(145deg, #eaf6f8, #f4fbf8); }
-    .result-art img { display: block; width: 100%; height: 100%; object-fit: cover; border-radius: 12px 12px 0 0; }
-    .result-caption { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 16px 20px; }
-    .result-caption h3 { font-size: 1.05rem; }
-    .result-label { padding: 4px 12px; border-radius: 999px; background: #e4f4f0; color: #17675d; font-weight: 800; font-size: 0.85rem; }
+    .result-art img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform 0.45s ease; }
+    .result-panel:hover .result-art img { transform: scale(1.045); }
+    .result-caption { display: flex; align-items: flex-start; gap: 14px; padding: 20px; }
+    .step-number { width: 38px; height: 38px; flex: 0 0 38px; display: grid; place-items: center; border: 1px solid #b8e3db; border-radius: 50%; background: #e8f7f3; color: #116b61; font-weight: 900; }
+    .step-copy { min-width: 0; }
+    .step-copy h3 { margin: 2px 0 8px; font-size: 1.1rem; }
+    .step-copy p { font-size: 0.92rem; line-height: 1.7; }
+    .result-label { display: inline-block; margin-bottom: 8px; color: #237a70; font-weight: 800; font-size: 0.82rem; }
     .results-note { margin: 20px auto 0; max-width: 600px; text-align: center; font-size: 0.9rem; }
 
     /* Testimonials */
@@ -277,6 +282,7 @@
       .hero-text, .about-text p { margin: 0 auto 36px; }
       .hero-actions, .about-list, .branch-pills { justify-content: center; }
       .services-grid, .testimonial-grid { grid-template-columns: 1fr; }
+      .results-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .footer-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
       .floating-widget { position: static; width: max-content; max-width: calc(100vw - 32px); margin: 24px auto; justify-content: flex-start; padding: 12px 16px; gap: 12px; animation: none; }
       .nav-links { gap: 16px; }
@@ -294,6 +300,9 @@
     @media (prefers-reduced-motion: reduce) {
       .floating-widget, .nav-dropdown[open] .nav-menu { animation: none; }
       .nav-dropdown summary::after { transition: none; }
+      .result-panel, .result-art img { transition: none; }
+      .result-panel:hover { transform: none; }
+      .result-panel:hover .result-art img { transform: none; }
     }
   </style>
 </head>
@@ -402,24 +411,51 @@
   <section class="section results-section" id="results">
     <div class="container">
       <div class="section-title">
-        <h2>عناية تصنع فرقاً</h2>
-        <p>تصور توضيحي لابتسامة قبل العناية وبعدها، مع خطة علاج تناسب كل حالة.</p>
+        <h2>رحلة علاجك</h2>
+        <p>خطوات واضحة من التقييم الأولي إلى متابعة النتيجة.</p>
       </div>
       <div class="results-grid">
         <article class="result-panel">
           <div class="result-art">
-            <img src="{{ url_for('static', filename='images/dental-before.jpg') }}" alt="صورة توضيحية لأسنان قبل العناية" loading="lazy" decoding="async">
+            <img src="{{ url_for('static', filename='images/dental-before.jpg') }}" alt="صورة توضيحية لفحص الأسنان قبل بدء العلاج" loading="lazy" decoding="async">
           </div>
-          <div class="result-caption"><h3>قبل العناية</h3><span class="result-label">قبل</span></div>
+          <div class="result-caption">
+            <span class="step-number" aria-label="الخطوة 1">1</span>
+            <div class="step-copy">
+              <span class="result-label">الخطوة الأولى</span>
+              <h3>التشخيص والتقييم</h3>
+              <p>نفحص صحة الأسنان ونستمع لاحتياجاتك لنضع تصوراً مناسباً للعلاج.</p>
+            </div>
+          </div>
+        </article>
+        <article class="result-panel">
+          <div class="result-art">
+            <img src="{{ url_for('static', filename='images/dental-treatment.jpg') }}" alt="طبيبة أسنان تعالج مريضاً داخل العيادة" loading="lazy" decoding="async">
+          </div>
+          <div class="result-caption">
+            <span class="step-number" aria-label="الخطوة 2">2</span>
+            <div class="step-copy">
+              <span class="result-label">الخطوة الثانية</span>
+              <h3>خطة العلاج والرعاية</h3>
+              <p>نشرح خيارات العلاج ونتابع معك الرعاية في بيئة مهنية ومريحة.</p>
+            </div>
+          </div>
         </article>
         <article class="result-panel">
           <div class="result-art">
             <img src="{{ url_for('static', filename='images/dental-after.jpg') }}" alt="صورة توضيحية لابتسامة بعد العناية بالأسنان" loading="lazy" decoding="async">
           </div>
-          <div class="result-caption"><h3>بعد العناية</h3><span class="result-label">بعد</span></div>
+          <div class="result-caption">
+            <span class="step-number" aria-label="الخطوة 3">3</span>
+            <div class="step-copy">
+              <span class="result-label">الخطوة الثالثة</span>
+              <h3>النتيجة والمتابعة</h3>
+              <p>نراجع تقدم العلاج ونقدم إرشادات تساعدك على الحفاظ على صحة ابتسامتك.</p>
+            </div>
+          </div>
         </article>
       </div>
-      <p class="results-note">صور توضيحية لنماذج العلاج، ولا تمثل الحالة نفسها أو تضمن نتيجة علاجية محددة.</p>
+      <p class="results-note">الصور والخطوات توضيحية، وقد تختلف خطة العلاج والنتائج حسب الحالة وتقييم طبيب الأسنان.</p>
     </div>
   </section>
 
