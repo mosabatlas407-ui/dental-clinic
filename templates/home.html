@@ -133,14 +133,13 @@
     .hero-actions { display: flex; gap: 16px; flex-wrap: wrap; }
     .hero-visual {
       position: relative;
-      background: linear-gradient(135deg, var(--teal-light) 0%, var(--bg-mint-soft) 100%);
-      border-radius: 36px;
-      padding: 40px;
-      display: flex; justify-content: center; align-items: center;
-      min-height: 440px;
+      background: #eaf6f8;
+      border-radius: 24px;
+      overflow: hidden;
+      aspect-ratio: 4 / 3;
       min-width: 0;
     }
-    .duotone-illustration { width: min(280px, 100%); height: auto; aspect-ratio: 1; }
+    .hero-photo, .about-photo { display: block; width: 100%; height: 100%; object-fit: cover; }
 
     /* Floating Booking Widget */
     .floating-widget {
@@ -182,10 +181,10 @@
       width: 64px; height: 64px;
       border-radius: 20px;
       background: var(--bg-mint-soft);
-      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
       margin-bottom: 24px;
-      color: var(--teal-primary);
     }
+    .service-icon-bg img { display: block; width: 100%; height: 100%; object-fit: cover; }
     .service-card h3 { font-size: 1.4rem; margin-bottom: 12px; }
     .service-card p { font-size: 1rem; margin-bottom: 28px; flex-grow: 1; }
     .service-actions { display: flex; gap: 12px; flex-wrap: wrap; width: 100%; }
@@ -218,21 +217,17 @@
       padding: 10px 20px; font-weight: 800; font-size: 0.95rem;
     }
 
-    /* Treatment journey timeline */
-    .results-section { background: linear-gradient(135deg, #eff8fb 0%, #f1fbf7 100%); }
-    .results-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; max-width: 1080px; margin: 0 auto; }
-    .result-panel { min-width: 0; overflow: hidden; background: #fff; border: 1px solid #dce9ed; border-radius: 16px; box-shadow: 0 12px 30px rgba(29, 78, 92, 0.08); transition: transform 0.24s ease, box-shadow 0.24s ease; }
-    .result-panel:hover { transform: translateY(-4px); box-shadow: 0 18px 36px rgba(29, 78, 92, 0.14); }
-    .result-art { aspect-ratio: 16 / 9; overflow: hidden; background: linear-gradient(145deg, #eaf6f8, #f4fbf8); }
-    .result-art img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform 0.45s ease; }
-    .result-panel:hover .result-art img { transform: scale(1.045); }
-    .result-caption { display: flex; align-items: flex-start; gap: 14px; padding: 20px; }
-    .step-number { width: 38px; height: 38px; flex: 0 0 38px; display: grid; place-items: center; border: 1px solid #b8e3db; border-radius: 50%; background: #e8f7f3; color: #116b61; font-weight: 900; }
-    .step-copy { min-width: 0; }
-    .step-copy h3 { margin: 2px 0 8px; font-size: 1.1rem; }
-    .step-copy p { font-size: 0.92rem; line-height: 1.7; }
-    .result-label { display: inline-block; margin-bottom: 8px; color: #237a70; font-weight: 800; font-size: 0.82rem; }
-    .results-note { margin: 20px auto 0; max-width: 600px; text-align: center; font-size: 0.9rem; }
+    /* Dental photography gallery */
+    .photo-gallery-section { background: linear-gradient(135deg, #eff8fb 0%, #f1fbf7 100%); }
+    .gallery-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; }
+    .gallery-card { min-width: 0; overflow: hidden; background: #fff; border: 1px solid #dce9ed; border-radius: 12px; box-shadow: 0 10px 26px rgba(29, 78, 92, 0.08); }
+    .gallery-photo { aspect-ratio: 16 / 9; overflow: hidden; background: #eaf6f8; }
+    .gallery-photo img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; }
+    .gallery-card:hover .gallery-photo img { transform: scale(1.04); }
+    .gallery-copy { padding: 16px 18px 18px; }
+    .gallery-copy h3 { margin-bottom: 6px; font-size: 1.05rem; }
+    .gallery-copy p { font-size: 0.9rem; line-height: 1.65; }
+    .gallery-note { margin: 20px auto 0; max-width: 680px; text-align: center; font-size: 0.88rem; }
 
     /* Testimonials */
     .testimonial-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
@@ -282,7 +277,7 @@
       .hero-text, .about-text p { margin: 0 auto 36px; }
       .hero-actions, .about-list, .branch-pills { justify-content: center; }
       .services-grid, .testimonial-grid { grid-template-columns: 1fr; }
-      .results-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .gallery-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .footer-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
       .floating-widget { position: static; width: max-content; max-width: calc(100vw - 32px); margin: 24px auto; justify-content: flex-start; padding: 12px 16px; gap: 12px; animation: none; }
       .nav-links { gap: 16px; }
@@ -290,19 +285,18 @@
     @media (max-width: 560px) {
       .hero-title { font-size: 2.2rem; }
       .section { padding: 56px 0; }
-      .hero-visual { min-height: 0; padding: 24px; }
+      .hero-visual { aspect-ratio: 4 / 3; }
       .footer-grid { grid-template-columns: minmax(0, 1fr); }
       .widget-sub { overflow-wrap: anywhere; }
       .nav-dropdown { position: static; }
       .nav-menu { top: auto; right: 0; left: 0; margin-top: 8px; }
-      .results-grid { grid-template-columns: minmax(0, 1fr); }
+      .gallery-grid { grid-template-columns: minmax(0, 1fr); }
     }
     @media (prefers-reduced-motion: reduce) {
       .floating-widget, .nav-dropdown[open] .nav-menu { animation: none; }
       .nav-dropdown summary::after { transition: none; }
-      .result-panel, .result-art img { transition: none; }
-      .result-panel:hover { transform: none; }
-      .result-panel:hover .result-art img { transform: none; }
+      .gallery-photo img { transition: none; }
+      .gallery-card:hover .gallery-photo img { transform: none; }
     }
   </style>
 </head>
@@ -353,13 +347,7 @@
         </div>
       </div>
       <div class="hero-visual">
-        <svg class="duotone-illustration" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="100" cy="100" r="80" fill="#14B8A6" fill-opacity="0.15"/>
-          <path d="M60 90C60 67.9086 77.9086 50 100 50C122.091 50 140 67.9086 140 90V110C140 132.091 122.091 150 100 150C77.9086 150 60 132.091 60 110V90Z" fill="#14B8A6"/>
-          <circle cx="85" cy="85" r="8" fill="#FFFFFF"/>
-          <circle cx="115" cy="85" r="8" fill="#FFFFFF"/>
-          <path d="M80 115C85 125 115 125 120 115" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round"/>
-        </svg>
+        <img class="hero-photo" src="{{ url_for('static', filename='images/dental-patient.jpg') }}" alt="مريضة تبتسم أثناء فحص أسنانها في العيادة" loading="lazy" decoding="async">
       </div>
     </div>
   </section>
@@ -373,7 +361,7 @@
       <div class="services-grid">
         <div class="service-card">
           <div class="service-icon-bg">
-            <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 21a9 9 0 100-18 9 9 0 000 18zM9 10h.01M15 10h.01M9.5 15a3.5 3.5 0 005 0"></path></svg>
+            <img src="{{ url_for('static', filename='images/dental-exam.jpg') }}" alt="" loading="lazy" decoding="async">
           </div>
           <h3>استشارة</h3>
           <p>فحص وتشخيص أولي لحالتك مع خطة علاج واضحة تناسبك وتناسب ميزانيتك.</p>
@@ -384,7 +372,7 @@
         </div>
         <div class="service-card">
           <div class="service-icon-bg">
-            <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
+            <img src="{{ url_for('static', filename='images/dental-patient.jpg') }}" alt="" loading="lazy" decoding="async">
           </div>
           <h3>حجز مستعجل</h3>
           <p>ألم حاد أو حالة طارئة؟ أولويتنا إنهاء الألم في أقرب وقت ممكن أو اليوم نفسه.</p>
@@ -395,7 +383,7 @@
         </div>
         <div class="service-card">
           <div class="service-icon-bg">
-            <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M4.8 9h14.4M4 15h16M10 3L8 21M16 3l-2 21"></path></svg>
+            <img src="{{ url_for('static', filename='images/dental-before.jpg') }}" alt="" loading="lazy" decoding="async">
           </div>
           <h3>عملية</h3>
           <p>خلع وجراحات دقيقة بيد خبيرة وبيئة معقمة وتخدير آمن وتوجيه كامل بعد العملية.</p>
@@ -408,54 +396,51 @@
     </div>
   </section>
 
-  <section class="section results-section" id="results">
+  <section class="section photo-gallery-section" id="results">
     <div class="container">
       <div class="section-title">
-        <h2>رحلة علاجك</h2>
-        <p>خطوات واضحة من التقييم الأولي إلى متابعة النتيجة.</p>
+        <h2>رعاية وابتسامات</h2>
+        <p>لقطات توضيحية من الفحص والرعاية وصحة الابتسامة.</p>
       </div>
-      <div class="results-grid">
-        <article class="result-panel">
-          <div class="result-art">
-            <img src="{{ url_for('static', filename='images/dental-before.jpg') }}" alt="صورة توضيحية لفحص الأسنان قبل بدء العلاج" loading="lazy" decoding="async">
+      <div class="gallery-grid">
+        <article class="gallery-card">
+          <div class="gallery-photo">
+            <img src="{{ url_for('static', filename='images/dental-before.jpg') }}" alt="فحص سريري للأسنان داخل العيادة" loading="lazy" decoding="async">
           </div>
-          <div class="result-caption">
-            <span class="step-number" aria-label="الخطوة 1">1</span>
-            <div class="step-copy">
-              <span class="result-label">الخطوة الأولى</span>
-              <h3>التشخيص والتقييم</h3>
-              <p>نفحص صحة الأسنان ونستمع لاحتياجاتك لنضع تصوراً مناسباً للعلاج.</p>
-            </div>
+          <div class="gallery-copy">
+            <h3>فحص سريري</h3>
+            <p>تقييم دقيق للأسنان وخيارات الرعاية المناسبة.</p>
           </div>
         </article>
-        <article class="result-panel">
-          <div class="result-art">
-            <img src="{{ url_for('static', filename='images/dental-treatment.jpg') }}" alt="طبيبة أسنان تعالج مريضاً داخل العيادة" loading="lazy" decoding="async">
+        <article class="gallery-card">
+          <div class="gallery-photo">
+            <img src="{{ url_for('static', filename='images/dental-after.jpg') }}" alt="ابتسامة بأسنان بيضاء ومتناسقة" loading="lazy" decoding="async">
           </div>
-          <div class="result-caption">
-            <span class="step-number" aria-label="الخطوة 2">2</span>
-            <div class="step-copy">
-              <span class="result-label">الخطوة الثانية</span>
-              <h3>خطة العلاج والرعاية</h3>
-              <p>نشرح خيارات العلاج ونتابع معك الرعاية في بيئة مهنية ومريحة.</p>
-            </div>
+          <div class="gallery-copy">
+            <h3>ابتسامة مشرقة</h3>
+            <p>العناية بصحة الأسنان تبدأ بخطة مناسبة لكل شخص.</p>
           </div>
         </article>
-        <article class="result-panel">
-          <div class="result-art">
-            <img src="{{ url_for('static', filename='images/dental-after.jpg') }}" alt="صورة توضيحية لابتسامة بعد العناية بالأسنان" loading="lazy" decoding="async">
+        <article class="gallery-card">
+          <div class="gallery-photo">
+            <img src="{{ url_for('static', filename='images/dental-exam.jpg') }}" alt="طبيب أسنان يفحص مريضاً في العيادة" loading="lazy" decoding="async">
           </div>
-          <div class="result-caption">
-            <span class="step-number" aria-label="الخطوة 3">3</span>
-            <div class="step-copy">
-              <span class="result-label">الخطوة الثالثة</span>
-              <h3>النتيجة والمتابعة</h3>
-              <p>نراجع تقدم العلاج ونقدم إرشادات تساعدك على الحفاظ على صحة ابتسامتك.</p>
-            </div>
+          <div class="gallery-copy">
+            <h3>عناية مهنية</h3>
+            <p>فريق طبي يشرح خطوات الفحص والعلاج بوضوح.</p>
+          </div>
+        </article>
+        <article class="gallery-card">
+          <div class="gallery-photo">
+            <img src="{{ url_for('static', filename='images/dental-patient.jpg') }}" alt="مريضة تراجع ابتسامتها بعد فحص الأسنان" loading="lazy" decoding="async">
+          </div>
+          <div class="gallery-copy">
+            <h3>متابعة مطمئنة</h3>
+            <p>تواصل مستمر وإرشادات للحفاظ على صحة الفم.</p>
           </div>
         </article>
       </div>
-      <p class="results-note">الصور والخطوات توضيحية، وقد تختلف خطة العلاج والنتائج حسب الحالة وتقييم طبيب الأسنان.</p>
+      <p class="gallery-note">صور فوتوغرافية توضيحية من مكتبة صور، وليست صوراً لمرضى العيادة أو ضماناً لنتائج علاجية محددة.</p>
     </div>
   </section>
 
@@ -478,12 +463,7 @@
         </div>
       </div>
       <div class="hero-visual">
-        <svg class="duotone-illustration" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="100" cy="100" r="80" fill="#14B8A6" fill-opacity="0.12"/>
-          <path d="M100 38c-13 0-21 7-31 7-19 0-31 15-31 35 0 25 14 54 31 72 8 8 16 9 21-1l7-20c1-4 2-7 3-7s2 3 3 7l7 20c5 10 13 9 21 1 17-18 31-47 31-72 0-20-12-35-31-35-10 0-18-7-31-7Z" fill="#FFFFFF" stroke="#0D9488" stroke-width="7" stroke-linejoin="round"/>
-          <path d="M70 66c7-7 16-10 26-10" stroke="#99E6DC" stroke-width="5" stroke-linecap="round"/>
-          <path d="M100 112v18" stroke="#CCFBF1" stroke-width="4" stroke-linecap="round"/>
-        </svg>
+        <img class="about-photo" src="{{ url_for('static', filename='images/dental-exam.jpg') }}" alt="فحص أسنان في بيئة عيادة مهنية" loading="lazy" decoding="async">
       </div>
     </div>
   </section>
